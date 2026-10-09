@@ -1,0 +1,315 @@
+* {
+    box-sizing: border-box;
+    margin:0;
+}
+
+.login-container {
+    display: flex;
+    min-height: 100vh;
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+}
+
+/* ================= LEFT ================= */
+.login-container-image {
+    flex: 0 0 51%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 60px;
+    color: #fff;
+    background:
+        radial-gradient(circle at 75% 35%, rgba(16, 185, 129, 0.16), transparent 45%),
+        linear-gradient(180deg, #0b1626 0%, #0a1a24 55%, #0b1626 100%);
+}
+
+.login-label-container {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.login-label-container img,
+.logo-fallback {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    object-fit: cover;
+    background: #10b981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+
+.login-label-container h1 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+
+.login-label-container p {
+    margin: 2px 0 0;
+    font-size: 0.95rem;
+    color: #cbd5e1;
+}
+
+/* ---------- Hero ---------- */
+.hero h2 {
+    margin: 0 0 24px;
+    font-size: 3.2rem;
+    line-height: 1.12;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+}
+
+.hero h2 span {
+    display: block;
+    color: #10b981;
+}
+
+.hero>p {
+    max-width: 560px;
+    margin: 0 0 44px;
+    font-size: 1.3rem;
+    line-height: 1.45;
+    color: #dbe3ee;
+}
+
+.stats {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    min-width: 176px;
+    padding: 22px 20px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.stat-card strong {
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+
+.stat-card span {
+    font-size: 0.95rem;
+    color: #cbd5e1;
+}
+
+
+/* ================= RIGHT ================= */
+.login-container-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 60px;
+    background: #fafbfc;
+}
+
+.login-box {
+    width: 100%;
+    max-width: 640px;
+}
+
+.proto-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    margin-bottom: 20px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #c2410c;
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+}
+
+.login-box h2 {
+    margin: 0 0 8px;
+    font-size: 2.4rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: #0f172a;
+}
+
+.login-sub {
+    margin: 0 0 30px;
+    font-size: 1.1rem;
+    line-height: 1.4;
+    color: #475569;
+}
+
+/* ---------- Role cards ---------- */
+.role-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 30px;
+}
+
+.role-card {
+    text-align: left;
+    padding: 20px;
+    border-radius: 18px;
+    background: #fff;
+    border: 2px solid #e8edf2;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.role-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.role-card.active {
+    border-color: #0f9d6b;
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.15);
+}
+
+.role-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 26px;
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.role-card.active .role-icon {
+    background: #10b981;
+    color: #fff;
+}
+
+.role-card h3 {
+    margin: 0 0 6px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.role-card p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: #64748b;
+}
+
+/* ---------- Continue button ---------- */
+.continue-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 17px;
+    border: none;
+    border-radius: 14px;
+    font-family: inherit;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    background: #0f9d6b;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(15, 157, 107, 0.3);
+    transition: background 0.2s, transform 0.2s;
+}
+
+.continue-btn:hover {
+    background: #0c8a5d;
+    transform: translateY(-1px);
+}
+
+/* ---------- Note row ---------- */
+.login-note {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 28px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid #eef1f5;
+    background: #fcfdfe;
+    font-size: 0.95rem;
+    color: #64748b;
+}
+
+.login-note span,
+.login-note button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.login-note span svg {
+    color: #10b981;
+}
+
+.login-note button {
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0f172a;
+    cursor: pointer;
+}
+
+.login-note button:hover {
+    color: #0f9d6b;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 1000px) {
+    .login-container {
+        flex-direction: column;
+    }
+
+    .login-container-image {
+        flex: none;
+        padding: 40px 28px;
+        gap: 36px;
+    }
+
+    .hero h2 {
+        font-size: 2.3rem;
+    }
+
+    .hero>p {
+        font-size: 1.1rem;
+    }
+
+    .login-container-content {
+        padding: 40px 24px;
+    }
+}
+
+@media (max-width: 560px) {
+    .role-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-card {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .login-note {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
