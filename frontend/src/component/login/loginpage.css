@@ -1,0 +1,353 @@
+/* Uses .login-container-content, .login-box, .login-sub and .continue-btn
+   from login.css, so only the new pieces are defined here. */
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px 8px 8px;
+    border: none;
+    border-radius: 10px;
+    background: none;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.back-btn:hover {
+    background: #eef2f6;
+    color: #0f172a;
+}
+
+.lp-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.lp-header h2 {
+    margin: 0 0 4px;
+}
+
+.lp-header .login-sub {
+    margin: 0;
+}
+
+.lp-role-icon {
+    flex: none;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #10b981;
+    color: #fff;
+}
+
+/* ---------- Form ---------- */
+.lp-form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.field label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.field input {
+    width: 100%;
+    padding: 15px 16px;
+    border-radius: 14px;
+    border: 2px solid #e8edf2;
+    background: #fff;
+    font-family: inherit;
+    font-size: 1.05rem;
+    color: #0f172a;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.field input::placeholder {
+    color: #94a3b8;
+}
+
+.field input:focus {
+    outline: none;
+    border-color: #0f9d6b;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+}
+
+.field.has-error input {
+    border-color: #dc2626;
+}
+
+.field.has-error input:focus {
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12);
+}
+
+.field-error {
+    font-size: 0.9rem;
+    color: #dc2626;
+}
+
+.password-wrap {
+    position: relative;
+}
+
+.password-wrap input {
+    padding-right: 52px;
+}
+
+.toggle-pass {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 10px;
+    background: none;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.toggle-pass:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.lp-form .continue-btn {
+    margin-top: 6px;
+}
+
+.continue-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.back-btn:focus-visible,
+.toggle-pass:focus-visible,
+.continue-btn:focus-visible {
+    outline: 3px solid rgba(16, 185, 129, 0.45);
+    outline-offset: 2px;
+}
+
+/* ---------- Google button + divider ---------- */
+.google-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 15px;
+    border: 2px solid #e8edf2;
+    border-radius: 14px;
+    background: #fff;
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #0f172a;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.google-btn:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+    transform: translateY(-1px);
+}
+
+.google-btn:focus-visible {
+    outline: 3px solid rgba(16, 185, 129, 0.45);
+    outline-offset: 2px;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 24px 0;
+    font-size: 0.95rem;
+    color: #94a3b8;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e8edf2;
+}
+
+/* ---------- Bottom section: register + change role ---------- */
+.lp-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid #e8edf2;
+}
+
+.lp-footer p {
+    font-size: 0.95rem;
+    color: #64748b;
+}
+
+.register-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 15px;
+    border: 2px solid #0f9d6b;
+    border-radius: 14px;
+    background: #fff;
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #0f9d6b;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.register-btn:hover {
+    background: #0f9d6b;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.register-btn:focus-visible {
+    outline: 3px solid rgba(16, 185, 129, 0.45);
+    outline-offset: 2px;
+}
+
+/* ---------- Compact card container ---------- */
+.lp-card {
+    max-width: 420px;
+    padding: 28px;
+    border-radius: 20px;
+    background: #fff;
+    border: 1px solid #e8edf2;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+}
+
+.lp-card .lp-header {
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.lp-card .lp-role-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+}
+
+.lp-card .lp-header h2 {
+    font-size: 1.35rem;
+    letter-spacing: -0.4px;
+    margin-bottom: 2px;
+}
+
+.lp-card .login-sub {
+    font-size: 0.9rem;
+}
+
+.lp-card .lp-form {
+    gap: 14px;
+}
+
+.lp-card .field {
+    gap: 6px;
+}
+
+.lp-card .field label {
+    font-size: 0.85rem;
+}
+
+.lp-card .field input {
+    padding: 11px 14px;
+    border-width: 1.5px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+}
+
+.lp-card .password-wrap input {
+    padding-right: 46px;
+}
+
+.lp-card .toggle-pass {
+    width: 32px;
+    height: 32px;
+}
+
+.lp-card .field-error {
+    font-size: 0.8rem;
+}
+
+.lp-card .google-btn,
+.lp-card .register-btn,
+.lp-card .continue-btn {
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+}
+
+.lp-card .google-btn {
+    border-width: 1.5px;
+}
+
+.lp-card .register-btn {
+    border-width: 1.5px;
+}
+
+.lp-card .continue-btn {
+    margin-top: 4px;
+    box-shadow: 0 6px 14px rgba(15, 157, 107, 0.25);
+}
+
+.lp-card .divider {
+    margin: 16px 0;
+    font-size: 0.85rem;
+}
+
+.lp-card .lp-footer {
+    gap: 8px;
+    margin-top: 20px;
+    padding-top: 18px;
+}
+
+.lp-card .lp-footer p {
+    font-size: 0.85rem;
+}
+
+.lp-card .back-btn {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+}
+
+@media (max-width: 560px) {
+    .lp-card {
+        padding: 22px 18px;
+    }
+}

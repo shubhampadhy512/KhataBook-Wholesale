@@ -1,0 +1,105 @@
+/* Extra styles for RegisterPage (card/field/button styles come from loginpage.css) */
+
+/* ---------- Phone field with +91 prefix ---------- */
+.phone-wrap {
+    display: flex;
+    align-items: stretch;
+}
+
+.phone-prefix {
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    border: 1.5px solid #e8edf2;
+    border-right: none;
+    border-radius: 12px 0 0 12px;
+    background: #f1f5f9;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.lp-card .phone-wrap input {
+    border-radius: 0 12px 12px 0;
+}
+
+.field.has-error .phone-prefix {
+    border-color: #dc2626;
+}
+
+/* ---------- OTP boxes ---------- */
+.otp-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.otp-input {
+    width: 100%;
+    max-width: 52px;
+    height: 52px;
+    padding: 0;
+    text-align: center;
+    border: 1.5px solid #e8edf2;
+    border-radius: 12px;
+    background: #fff;
+    font-family: inherit;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #0f172a;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.otp-input:focus {
+    outline: none;
+    border-color: #0f9d6b;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+}
+
+.otp-row.has-error .otp-input {
+    border-color: #dc2626;
+}
+
+.otp-error {
+    text-align: center;
+}
+
+/* ---------- Resend link ---------- */
+.link-btn {
+    border: none;
+    background: none;
+    padding: 0;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: 700;
+    color: #0f9d6b;
+    cursor: pointer;
+}
+
+.link-btn:hover {
+    text-decoration: underline;
+}
+
+/* ---------- Success step ---------- */
+.done-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+    padding: 12px 0;
+}
+
+.done-icon {
+    color: #10b981;
+}
+
+.done-box h2 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.done-box .continue-btn {
+    margin-top: 12px;
+}

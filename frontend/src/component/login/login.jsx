@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { BookOpen, UserCog, Store, ArrowRight, ShieldCheck } from 'lucide-react'
 import './login.css'
 import Logo from '/logo.png'
+import LoginPage from './loginpage'
+import RegisterPage from './registerpage'
 
 const roles = [
     {
@@ -26,17 +28,9 @@ const stats = [
 
 function Login() {
     const [selected, setSelected] = useState('storeman')
+    const [loginpage, setLoginpage] = useState(false);
+    const [registering, setRegistering] = useState(false)
     const activeRole = roles.find((r) => r.id === selected)
-
-    const handleContinue = () => {
-        console.log('Continue as', selected)
-        // navigate(`/${selected}`) when you add routing
-    }
-
-    const handleReset = () => {
-        // clear your saved demo data here
-        // localStorage.removeItem('your-key')
-    }
 
     return (
         <div className="login-container">
@@ -78,38 +72,52 @@ function Login() {
             </div>
 
             {/* ---------- RIGHT ---------- */}
-            <div className="login-container-content">
-                <div className="login-box">
-                    <div className="role-grid">
-                        {roles.map(({ id, title, desc, Icon }) => (
-                            <button
-                                key={id}
-                                type="button"
-                                className={`role-card ${selected === id ? 'active' : ''}`}
-                                onClick={() => setSelected(id)}
-                            >
-                                <span className="role-icon">
-                                    <Icon size={20} />
-                                </span>
-                                <h3>{title}</h3>
-                                <p>{desc}</p>
-                            </button>
-                        ))}
-                    </div>
+            {!loginpage ? (
+                <div className="login-container-content">
+                    <div className="login-box">
+                        <div className="role-grid">
+                            {roles.map(({ id, title, desc, Icon }) => (
+                                <button
+                                    key={id}
+                                    type="button"
+                                    className={`role-card ${selected === id ? 'active' : ''}`}
+                                    onClick={() => setSelected(id)}
+                                >
+                                    <span className="role-icon">
+                                        <Icon size={20} />
+                                    </span>
+                                    <h3>{title}</h3>
+                                    <p>{desc}</p>
+                                </button>
+                            ))}
+                        </div>
 
-                    <button className="continue-btn" onClick={handleContinue}>
-                        Continue as {activeRole.title}
-                        <ArrowRight size={18} />
-                    </button>
+                        <button className="continue-btn" onClick={() => setLoginpage(true)}>
+                            Continue as {activeRole.title}
+                            <ArrowRight size={18} />
+                        </button>
 
-                    <div className="login-note">
-                        <span>
-                            <ShieldCheck size={16} />
-                            Data is saved only in this browser.
-                        </span>
+                        <div className="login-note">
+                            <span>
+                                <ShieldCheck size={16} />
+                                Data is saved only in this browser.
+                            </span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            ) : registering ? (
+                <RegisterPage
+                    role={selected}
+                    onBack={() => { setLoginpage(false); setRegistering(false) }}
+                    onLogin={() => setRegistering(false)}
+                />
+            ) : (
+                <LoginPage
+                    role={selected}
+                    onBack={() => setLoginpage(false)}
+                    onRegister={() => setRegistering(true)}
+                />
+            )}
         </div>
     )
 }
