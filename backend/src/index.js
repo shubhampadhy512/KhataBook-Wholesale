@@ -2,27 +2,27 @@ require("dotenv").config();
 
 const express = require("express");
 const app = require("./app.js");
-const User = require("./models/user.js");
+const User = require("./models/user.model.js");
 const connectMongoose = require("./db/connectdb.js");
 
-app.get("/", (req, res) => {
-    res.send("hello world");
-});
+// app.get("/", (req, res) => {
+//     res.send("hello world");
+// });
 
-app.get("/user", async (req, res) => {
-    try {
-        const newUser = await User.create({
-            name: "shubham",
-            email: "shubham123@gmail.com",
-            phone: "938872948",
-            password: "shubham",
-        });
-        res.send(newUser);
-    } catch (error) {
-        console.error("Failed to create user:", error);
-        res.status(500).json({ error: "Failed to create user" });
-    }
-});
+// app.get("/user", async (req, res) => {
+//     try {
+//         const newUser = await User.create({
+//             name: "shubham",
+//             email: "shubham123@gmail.com",
+//             phone: "938872948",
+//             password: "shubham",
+//         });
+//         res.send(newUser);
+//     } catch (error) {
+//         console.error("Failed to create user:", error);
+//         res.status(500).json({ error: "Failed to create user" });
+//     }
+// });
 
 
 connectMongoose()

@@ -11,6 +11,5 @@ const connectMongoose = async()=>{
     }
 };
 
-// connectdb.js
 module.exports = connectMongoose;
 
