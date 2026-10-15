@@ -1,0 +1,471 @@
+/* All classes are prefixed with md- so they don't clash with loginpage.css */
+
+.md-shell {
+    display: flex;
+    min-height: 100vh;
+    background: #f8fafc;
+    color: #0f172a;
+}
+
+/* ---------- Sidebar ---------- */
+.md-sidebar {
+    position: sticky;
+    top: 0;
+    flex: none;
+    width: 280px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 12px;
+    background: #0f172a;
+    color: #cbd5e1;
+}
+
+.md-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 10px 24px;
+}
+
+.md-brand-logo {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #10b981;
+    color: #fff;
+}
+
+.md-brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+}
+
+.md-brand-text strong {
+    font-size: 1rem;
+    color: #fff;
+}
+
+.md-brand-text span {
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+.md-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.md-nav-item,
+.md-logout {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    border: none;
+    border-radius: 12px;
+    background: none;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #cbd5e1;
+    text-decoration: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.md-nav-item:hover,
+.md-logout:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+}
+
+.md-nav-item.active {
+    background: #0d3b3a;
+    color: #10b981;
+}
+
+.md-nav-label {
+    flex: 1;
+}
+
+.md-nav-badge {
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f97316;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.md-logout {
+    margin-top: 12px;
+    border-radius: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 18px;
+}
+
+.md-nav-item:focus-visible,
+.md-logout:focus-visible,
+.md-icon-btn:focus-visible,
+.md-primary-btn:focus-visible {
+    outline: 3px solid rgba(16, 185, 129, 0.5);
+    outline-offset: 2px;
+}
+
+/* ---------- Top bar ---------- */
+.md-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.md-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 20px;
+    padding: 14px 30px;
+    background: #fff;
+    border-bottom: 1px solid #e8edf2;
+}
+
+.md-icon-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    color: #475569;
+    cursor: pointer;
+}
+
+.md-icon-btn:hover {
+    background: #f1f5f9;
+}
+
+.md-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-left: 20px;
+    border-left: 1px solid #e8edf2;
+}
+
+.md-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fde8c8;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.md-user-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+}
+
+.md-user-text strong {
+    font-size: 1rem;
+}
+
+.md-user-text span {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+/* ---------- Content ---------- */
+.md-content {
+    padding: 40px;
+}
+
+.md-greeting {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 30px;
+}
+
+.md-greeting h1 {
+    margin: 0 0 4px;
+    font-size: 1.9rem;
+    letter-spacing: -0.5px;
+}
+
+.md-greeting p {
+    margin: 0;
+    color: #64748b;
+}
+
+.md-primary-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 22px;
+    border: none;
+    border-radius: 12px;
+    background: #0f9d6b;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 6px 14px rgba(15, 157, 107, 0.25);
+    transition: background 0.2s, transform 0.2s;
+}
+
+.md-primary-btn:hover {
+    background: #0b7a53;
+    transform: translateY(-1px);
+}
+
+/* ---------- Cards ---------- */
+.md-card {
+    background: #fff;
+    border: 1px solid #e8edf2;
+    border-radius: 18px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.md-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.md-stat {
+    padding: 24px;
+    min-height: 160px;
+}
+
+.md-stat-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.md-stat-label {
+    color: #64748b;
+    font-size: 1rem;
+}
+
+.md-stat-icon {
+    flex: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.md-stat-icon.tone-slate {
+    background: #e8eef2;
+    color: #334155;
+}
+
+.md-stat-icon.tone-green {
+    background: #dcf5ea;
+    color: #0f9d6b;
+}
+
+.md-stat-icon.tone-orange {
+    background: #fde8e0;
+    color: #ea580c;
+}
+
+.md-stat-icon.tone-mint {
+    background: #d5f5e6;
+    color: #0f9d6b;
+}
+
+.md-stat-value {
+    margin-top: 6px;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.md-stat-hint {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+/* ---------- Panels ---------- */
+.md-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.md-panel {
+    overflow: hidden;
+}
+
+.md-panel h2 {
+    margin: 0;
+    padding: 22px 26px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-bottom: 1px solid #e8edf2;
+}
+
+.md-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 26px;
+}
+
+.md-row+.md-row {
+    border-top: 1px solid #eef2f6;
+}
+
+.md-row-main {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.md-row-main strong {
+    font-size: 1.3rem;
+}
+
+.md-row-meta {
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.md-row-title {
+    font-weight: 600;
+}
+
+.md-row-sub {
+    margin-top: 2px;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.md-row-amount {
+    font-size: 1.15rem;
+    white-space: nowrap;
+}
+
+.md-empty {
+    margin: 0;
+    padding: 24px 26px;
+    color: #64748b;
+}
+
+/* ---------- Status pill ---------- */
+.md-status {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.md-status i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.md-status.pending {
+    background: #fff1e8;
+    border: 1px solid #fdba8c;
+    color: #ea580c;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1200px) {
+    .md-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 980px) {
+    .md-sidebar {
+        width: 76px;
+        padding: 20px 10px;
+    }
+
+    .md-brand-text,
+    .md-nav-label,
+    .md-nav-badge {
+        display: none;
+    }
+
+    .md-nav-item,
+    .md-logout {
+        justify-content: center;
+        padding: 12px;
+    }
+
+    .md-brand {
+        justify-content: center;
+        padding: 4px 0 24px;
+    }
+
+    .md-panels {
+        grid-template-columns: 1fr;
+    }
+
+    .md-content {
+        padding: 28px 20px;
+    }
+}
+
+@media (max-width: 560px) {
+    .md-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .md-greeting {
+        flex-direction: column;
+    }
+
+    .md-user-text {
+        display: none;
+    }
+
+    .md-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

@@ -133,6 +133,32 @@
     color: #0f172a;
 }
 
+/* ---------- Forgot password ---------- */
+.forgot-btn {
+    align-self: flex-end;
+    padding: 4px 6px;
+    margin: -2px -6px 0 0;
+    border: none;
+    border-radius: 8px;
+    background: none;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #0f9d6b;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.forgot-btn:hover {
+    background: rgba(16, 185, 129, 0.1);
+    color: #0b7a53;
+}
+
+.forgot-btn:focus-visible {
+    outline: 3px solid rgba(16, 185, 129, 0.45);
+    outline-offset: 2px;
+}
+
 .lp-form .continue-btn {
     margin-top: 6px;
 }

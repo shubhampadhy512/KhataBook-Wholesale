@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { ArrowLeft, Eye, EyeOff, LogIn, UserPlus, UserCog, Store, ShieldAlert } from 'lucide-react'
 import { useNavigate } from "react-router-dom"
-import {  toast} from 'react-toastify';
+import { toast } from 'react-toastify';
 import './loginpage.css'
 import ErrorToastMessage from '../toastMessage/errormessage';
 
@@ -83,22 +83,29 @@ function LoginPage({ role = 'storeman', onBack, onRegister }) {
                 notify(data.message)
             }
         } catch (err) {
-            setErrors("Something went wrong");
+            notify("Something went wrong")
         } finally {
             setTimeout(() => {
                 setLoading(false)
             }, 100)
         }
     }
+
     const handleGoogle = () => {
         // TODO: hook up Google sign-in (e.g. Firebase signInWithPopup)
         console.log('Google sign-in as', role)
     }
 
+    // Sends the user to the reset password page.
+    // The typed email and the role are passed along so that page can pre-fill them.
+    const handleForgotPassword = () => {
+        navigate('/forgot-password', { state: { email: email.trim(), role } })
+    }
+
     return (
         <>
             <div>
-                <ErrorToastMessage/>
+                <ErrorToastMessage />
             </div>
             <div className="login-container-content">
                 <div className="login-box lp-card">
@@ -158,6 +165,13 @@ function LoginPage({ role = 'storeman', onBack, onRegister }) {
                                 </button>
                             </div>
                             {errors.password && <span className="field-error" id="password-error">{errors.password}</span>}
+                            <button
+                                type="button"
+                                className="forgot-btn"
+                                onClick={handleForgotPassword}
+                            >
+                                Forgot password?
+                            </button>
                         </div>
 
                         <button type="submit" className="continue-btn" disabled={loading}>

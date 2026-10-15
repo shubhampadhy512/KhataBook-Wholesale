@@ -6,6 +6,7 @@ import {
 import { toast } from 'react-toastify'
 import './loginpage.css'     // reuses the card, field, button styles
 import './registerpage.css'
+import ErrorToastMessage from '../toastMessage/errormessage';
 
 const roleInfo = {
     storeman: { title: 'Storeman', Icon: UserCog },
@@ -139,7 +140,7 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
                     otp: code,
                 }),
             })
-            const data = await response.json().catch(() => ({}))
+            const data = await response.json()
 
             if (response.status === 201) {
                 setStep('done')
@@ -147,6 +148,11 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
             }
             if (response.status === 409) {               // user already exists
                 errorToast(data.message || 'User already exist')
+                setStep('form')
+                return
+            }
+            if (response.status === 405 || response.status === 429) {
+                errorToast(data.message)
                 setStep('form')
                 return
             }
@@ -182,143 +188,147 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
     const maskedEmail = form.email
 
     return (
-        <div className="login-container-content">
-            <div className="login-box lp-card">
-                {/* ============ STEP 1: FORM ============ */}
-                {step === 'form' && (
-                    <>
-                        <div className="lp-header">
-                            <span className="lp-role-icon"><Icon size={22} /></span>
-                            <div>
-                                <h2>Register as {title}</h2>
-                                <p className="login-sub">Create your account in a minute.</p>
-                            </div>
-                        </div>
-
-                        <form className="lp-form" onSubmit={handleRegister} noValidate>
-                            <div className={`field ${errors.username ? 'has-error' : ''}`}>
-                                <label htmlFor="username">Username</label>
-                                <input id="username" type="text" autoComplete="username" placeholder="e.g. anil.mehta"
-                                    value={form.username} onChange={setField('username')} />
-                                {errors.username && <span className="field-error">{errors.username}</span>}
-                            </div>
-
-                            <div className={`field ${errors.email ? 'has-error' : ''}`}>
-                                <label htmlFor="reg-email">Email</label>
-                                <input id="reg-email" type="email" autoComplete="email" placeholder="you@example.com"
-                                    value={form.email} onChange={setField('email')} />
-                                {errors.email && <span className="field-error">{errors.email}</span>}
-                            </div>
-
-                            <div className={`field ${errors.phone ? 'has-error' : ''}`}>
-                                <label htmlFor="phone">Phone number</label>
-                                <div className="phone-wrap">
-                                    <span className="phone-prefix">+91</span>
-                                    <input id="phone" type="tel" inputMode="numeric" autoComplete="tel-national"
-                                        placeholder="10-digit mobile number"
-                                        value={form.phone} onChange={setField('phone')} />
+        <>
+            <ErrorToastMessage />
+            <div className="login-container-content">
+                <div className="login-box lp-card">
+                    {/* ============ STEP 1: FORM ============ */}
+                    {step === 'form' && (
+                        <>
+                            <div className="lp-header">
+                                <span className="lp-role-icon"><Icon size={22} /></span>
+                                <div>
+                                    <h2>Register as {title}</h2>
+                                    <p className="login-sub">Create your account in a minute.</p>
                                 </div>
-                                {errors.phone && <span className="field-error">{errors.phone}</span>}
                             </div>
 
-                            <div className={`field ${errors.password ? 'has-error' : ''}`}>
-                                <label htmlFor="reg-password">Password</label>
-                                <div className="password-wrap">
-                                    <input id="reg-password" type={showPassword ? 'text' : 'password'}
-                                        autoComplete="new-password" placeholder="At least 6 characters"
-                                        value={form.password} onChange={setField('password')} />
-                                    <button type="button" className="toggle-pass"
-                                        onClick={() => setShowPassword((s) => !s)}
-                                        aria-label={showPassword ? 'Hide password' : 'Show password'}>
-                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                    </button>
+                            <form className="lp-form" onSubmit={handleRegister} noValidate>
+                                <div className={`field ${errors.username ? 'has-error' : ''}`}>
+                                    <label htmlFor="username">Username</label>
+                                    <input id="username" type="text" autoComplete="username" placeholder="e.g. anil.mehta"
+                                        value={form.username} onChange={setField('username')} />
+                                    {errors.username && <span className="field-error">{errors.username}</span>}
                                 </div>
-                                {errors.password && <span className="field-error">{errors.password}</span>}
+
+                                <div className={`field ${errors.email ? 'has-error' : ''}`}>
+                                    <label htmlFor="reg-email">Email</label>
+                                    <input id="reg-email" type="email" autoComplete="email" placeholder="you@example.com"
+                                        value={form.email} onChange={setField('email')} />
+                                    {errors.email && <span className="field-error">{errors.email}</span>}
+                                </div>
+
+                                <div className={`field ${errors.phone ? 'has-error' : ''}`}>
+                                    <label htmlFor="phone">Phone number</label>
+                                    <div className="phone-wrap">
+                                        <span className="phone-prefix">+91</span>
+                                        <input id="phone" type="tel" inputMode="numeric" autoComplete="tel-national"
+                                            placeholder="10-digit mobile number"
+                                            value={form.phone} onChange={setField('phone')} />
+                                    </div>
+                                    {errors.phone && <span className="field-error">{errors.phone}</span>}
+                                </div>
+
+                                <div className={`field ${errors.password ? 'has-error' : ''}`}>
+                                    <label htmlFor="reg-password">Password</label>
+                                    <div className="password-wrap">
+                                        <input id="reg-password" type={showPassword ? 'text' : 'password'}
+                                            autoComplete="new-password" placeholder="At least 6 characters"
+                                            value={form.password} onChange={setField('password')} />
+                                        <button type="button" className="toggle-pass"
+                                            onClick={() => setShowPassword((s) => !s)}
+                                            aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
+                                    {errors.password && <span className="field-error">{errors.password}</span>}
+                                </div>
+
+                                <button type="submit" className="continue-btn" disabled={loading}>
+                                    {loading ? 'Sending OTP…' : 'Register & send OTP'}
+                                    {!loading && <UserPlus size={18} />}
+                                </button>
+                            </form>
+
+                            <div className="lp-footer">
+                                <p>Already have an account?</p>
+                                <button type="button" className="register-btn" onClick={onLogin}>Sign in</button>
+                                <button type="button" className="back-btn" onClick={onBack}>
+                                    <ArrowLeft size={16} /> Change role
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {/* ============ STEP 2: OTP ============ */}
+                    {step === 'otp' && (
+                        <>
+                            <div className="lp-header">
+                                <span className="lp-role-icon"><ShieldCheck size={22} /></span>
+                                <div>
+                                    <h2>Verify your email</h2>
+                                    <p className="login-sub">Enter the code sent to {maskedEmail}</p>
+                                </div>
                             </div>
 
-                            <button type="submit" className="continue-btn" disabled={loading}>
-                                {loading ? 'Sending OTP…' : 'Register & send OTP'}
-                                {!loading && <UserPlus size={18} />}
-                            </button>
-                        </form>
+                            <form className="lp-form" onSubmit={handleVerify} noValidate>
+                                <div className={`otp-row ${otpError ? 'has-error' : ''}`} onPaste={handleOtpPaste}>
+                                    {otp.map((digit, i) => (
+                                        <input
+                                            key={i}
+                                            ref={(el) => (inputRefs.current[i] = el)}
+                                            className="otp-input"
+                                            type="text"
+                                            inputMode="numeric"
+                                            autoComplete={i === 0 ? 'one-time-code' : 'off'}
+                                            maxLength={1}
+                                            value={digit}
+                                            onChange={(e) => handleOtpChange(i, e.target.value)}
+                                            onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                                            aria-label={`Digit ${i + 1} of ${OTP_LENGTH}`}
+                                        />
+                                    ))}
+                                </div>
+                                {otpError && <span className="field-error otp-error">{otpError}</span>}
 
-                        <div className="lp-footer">
-                            <p>Already have an account?</p>
-                            <button type="button" className="register-btn" onClick={onLogin}>Sign in</button>
-                            <button type="button" className="back-btn" onClick={onBack}>
-                                <ArrowLeft size={16} /> Change role
-                            </button>
-                        </div>
-                    </>
-                )}
+                                <button type="submit" className="continue-btn" disabled={loading}>
+                                    {loading ? 'Verifying…' : 'Verify & continue'}
+                                </button>
+                            </form>
 
-                {/* ============ STEP 2: OTP ============ */}
-                {step === 'otp' && (
-                    <>
-                        <div className="lp-header">
-                            <span className="lp-role-icon"><ShieldCheck size={22} /></span>
-                            <div>
-                                <h2>Verify your email</h2>
-                                <p className="login-sub">Enter the code sent to {maskedEmail}</p>
+                            <div className="lp-footer">
+                                <p>
+                                    Didn&apos;t get the code?{' '}
+                                    {seconds > 0 ? (
+                                        <strong>Resend in {seconds}s</strong>
+                                    ) : (
+                                        <button type="button" className="link-btn" onClick={handleResendOtp}>
+                                            Resend OTP
+                                        </button>
+                                    )}
+                                </p>
+                                <button type="button" className="back-btn" onClick={() => setStep('form')}>
+                                    <ArrowLeft size={16} /> Edit details
+                                </button>
                             </div>
-                        </div>
+                        </>
+                    )}
 
-                        <form className="lp-form" onSubmit={handleVerify} noValidate>
-                            <div className={`otp-row ${otpError ? 'has-error' : ''}`} onPaste={handleOtpPaste}>
-                                {otp.map((digit, i) => (
-                                    <input
-                                        key={i}
-                                        ref={(el) => (inputRefs.current[i] = el)}
-                                        className="otp-input"
-                                        type="text"
-                                        inputMode="numeric"
-                                        autoComplete={i === 0 ? 'one-time-code' : 'off'}
-                                        maxLength={1}
-                                        value={digit}
-                                        onChange={(e) => handleOtpChange(i, e.target.value)}
-                                        onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                                        aria-label={`Digit ${i + 1} of ${OTP_LENGTH}`}
-                                    />
-                                ))}
-                            </div>
-                            {otpError && <span className="field-error otp-error">{otpError}</span>}
-
-                            <button type="submit" className="continue-btn" disabled={loading}>
-                                {loading ? 'Verifying…' : 'Verify & continue'}
-                            </button>
-                        </form>
-
-                        <div className="lp-footer">
-                            <p>
-                                Didn&apos;t get the code?{' '}
-                                {seconds > 0 ? (
-                                    <strong>Resend in {seconds}s</strong>
-                                ) : (
-                                    <button type="button" className="link-btn" onClick={handleResendOtp}>
-                                        Resend OTP
-                                    </button>
-                                )}
+                    {/* ============ STEP 3: DONE ============ */}
+                    {step === 'done' && (
+                        <div className="done-box">
+                            <span className="done-icon"><CheckCircle2 size={44} /></span>
+                            <h2>You&apos;re all set!</h2>
+                            <p className="login-sub">
+                                Your {title.toLowerCase()} account has been created and your email is verified.
                             </p>
-                            <button type="button" className="back-btn" onClick={() => setStep('form')}>
-                                <ArrowLeft size={16} /> Edit details
-                            </button>
+                            <button type="button" className="continue-btn" onClick={onLogin}>Go to sign in</button>
                         </div>
-                    </>
-                )}
-
-                {/* ============ STEP 3: DONE ============ */}
-                {step === 'done' && (
-                    <div className="done-box">
-                        <span className="done-icon"><CheckCircle2 size={44} /></span>
-                        <h2>You&apos;re all set!</h2>
-                        <p className="login-sub">
-                            Your {title.toLowerCase()} account has been created and your email is verified.
-                        </p>
-                        <button type="button" className="continue-btn" onClick={onLogin}>Go to sign in</button>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
-        </div>
+
+        </>
     )
 }
 
