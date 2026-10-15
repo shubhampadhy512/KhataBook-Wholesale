@@ -62,16 +62,40 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
         const next = validate()
         setErrors(next)
         if (Object.keys(next).length) return
-
-        setLoading(true)
         try {
+            const response = await fetch(
+                `${import.meta.env.VITE_BACKEND_URL}/register`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({
+                        username: form.username,
+                        email: form.email,
+                        phonenumber: form.phone,
+                        role: role,
+                        password : form.password
+                    })
+                }
+            );
+            const data = await response.json()
+            if (response.status === 401 || response.status === 404) {
+                setErrors(data.message);
+            }
+
+            console.log(response.status);
+            if (response.status === 200) {
+                setLoading(true)
+            }
             await sendOtp(form.phone)
             setOtp(Array(OTP_LENGTH).fill(''))
             setOtpError('')
             setSeconds(RESEND_SECONDS)
             setStep('otp')
-        } catch {
-            setErrors({ form: 'Could not send OTP. Please try again.' })
+        } catch (err) {
+            setErrors("Something went wrong");
         } finally {
             setLoading(false)
         }
@@ -129,7 +153,7 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
         }
     }
 
-    const handleResend = async () => {
+    const handleResendOtp = async () => {
         if (seconds > 0) return
         await sendOtp(form.phone)
         setOtp(Array(OTP_LENGTH).fill(''))

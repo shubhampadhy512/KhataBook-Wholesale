@@ -1,14 +1,14 @@
-import { useState } from 'react'
-import './App.css'
-import Login from "./component/login/login.jsx";
+
+import { Routes, Route } from 'react-router-dom'
+import Login from "./component/login/login.jsx"
+import Profile from "./component/home/profile.jsx"
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-    <Login/>
-    </>
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route path="/profile" element={<Profile />} />
+    </Routes>
   )
 }
 

@@ -1,0 +1,131 @@
+/* ============ toast.css ============ */
+
+:root {
+    --toastify-font-family: "Inter", system-ui, -apple-system, sans-serif;
+    --toastify-toast-min-height: 56px;
+}
+
+/* ---------- Container (top-center) ---------- */
+.Toastify__toast-container--top-center {
+    top: 20px;
+    width: auto;
+    min-width: 360px;
+    max-width: 90vw;
+}
+
+@media (max-width: 480px) {
+    .Toastify__toast-container--top-center {
+        top: 12px;
+        min-width: unset;
+        width: calc(100vw - 24px);
+    }
+}
+
+/* ---------- Base toast ---------- */
+.kb-toast {
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 14.5px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: #0f172a;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-left-width: 5px;
+    box-shadow: 0 12px 32px -10px rgba(15, 23, 42, 0.25);
+}
+
+.kb-toast .Toastify__toast-body {
+    padding: 0;
+    gap: 10px;
+    align-items: center;
+}
+
+.kb-toast .Toastify__close-button {
+    opacity: 0.7;
+    align-self: center;
+}
+
+.kb-toast .Toastify__close-button:hover {
+    opacity: 1;
+}
+
+.kb-progress {
+    height: 3px;
+}
+
+/* ---------- Error ---------- */
+.kb-toast.Toastify__toast--error {
+    background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+    color: #9f1239;
+    border-color: #fecdd3;
+    border-left-color: #e11d48;
+    box-shadow: 0 12px 32px -10px rgba(225, 29, 72, 0.35);
+    --toastify-icon-color-error: #e11d48;
+}
+
+.kb-toast.Toastify__toast--error .Toastify__close-button {
+    color: #be123c;
+}
+
+.kb-toast.Toastify__toast--error .Toastify__progress-bar--error,
+.kb-toast.Toastify__toast--error .kb-progress {
+    background: #e11d48;
+}
+
+/* ---------- Success ---------- */
+.kb-toast.Toastify__toast--success {
+    background: linear-gradient(135deg, #f0fdf7 0%, #d1fae5 100%);
+    color: #065f46;
+    border-color: #a7f3d0;
+    border-left-color: #10b981;
+    box-shadow: 0 12px 32px -10px rgba(16, 185, 129, 0.35);
+    --toastify-icon-color-success: #10b981;
+}
+
+.kb-toast.Toastify__toast--success .Toastify__close-button {
+    color: #047857;
+}
+
+.kb-toast.Toastify__toast--success .Toastify__progress-bar--success,
+.kb-toast.Toastify__toast--success .kb-progress {
+    background: #10b981;
+}
+
+/* ---------- Warning ---------- */
+.kb-toast.Toastify__toast--warning {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    color: #92400e;
+    border-color: #fde68a;
+    border-left-color: #f59e0b;
+    box-shadow: 0 12px 32px -10px rgba(245, 158, 11, 0.35);
+    --toastify-icon-color-warning: #f59e0b;
+}
+
+.kb-toast.Toastify__toast--warning .Toastify__close-button {
+    color: #b45309;
+}
+
+.kb-toast.Toastify__toast--warning .Toastify__progress-bar--warning,
+.kb-toast.Toastify__toast--warning .kb-progress {
+    background: #f59e0b;
+}
+
+/* ---------- Info ---------- */
+.kb-toast.Toastify__toast--info {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    color: #1e40af;
+    border-color: #bfdbfe;
+    border-left-color: #3b82f6;
+    box-shadow: 0 12px 32px -10px rgba(59, 130, 246, 0.35);
+    --toastify-icon-color-info: #3b82f6;
+}
+
+.kb-toast.Toastify__toast--info .Toastify__close-button {
+    color: #1d4ed8;
+}
+
+.kb-toast.Toastify__toast--info .Toastify__progress-bar--info,
+.kb-toast.Toastify__toast--info .kb-progress {
+    background: #3b82f6;
+}

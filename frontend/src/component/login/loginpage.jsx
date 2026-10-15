@@ -1,6 +1,9 @@
 import React, { useState } from 'react'
-import { ArrowLeft, Eye, EyeOff, LogIn, UserPlus, UserCog, Store } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff, LogIn, UserPlus, UserCog, Store, ShieldAlert } from 'lucide-react'
+import { useNavigate } from "react-router-dom"
+import {  toast} from 'react-toastify';
 import './loginpage.css'
+import ErrorToastMessage from '../toastMessage/errormessage';
 
 const roleIcons = {
     storeman: { title: 'Storeman', Icon: UserCog },
@@ -21,11 +24,16 @@ function GoogleIcon() {
 function LoginPage({ role = 'storeman', onBack, onRegister }) {
     const { title, Icon } = roleIcons[role]
 
+    const notify = (message) =>
+        toast.error(message, {
+            icon: <ShieldAlert size={20} color="#e11d48" />,
+        });
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
     const [errors, setErrors] = useState({})
     const [loading, setLoading] = useState(false)
+    const navigate = useNavigate();
 
     const validate = () => {
         const next = {}
@@ -42,110 +50,141 @@ function LoginPage({ role = 'storeman', onBack, onRegister }) {
         return next
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
         const next = validate()
         setErrors(next)
         if (Object.keys(next).length > 0) return
 
         setLoading(true)
-        // TODO: replace with real auth / navigation
-        setTimeout(() => {
-            setLoading(false)
-            console.log('Logged in as', role, email)
-        }, 800)
-    }
 
+        try {
+            const response = await fetch(
+                `${import.meta.env.VITE_BACKEND_URL}/login`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        role
+                    })
+                }
+            );
+            const data = await response.json()
+            console.log(response.status);
+            if (response.status === 200) {
+                console.log("Direct to profile page")
+                navigate("/profile");
+            } else if (response.status === 401 || response.status === 404) {
+                notify(data.message)
+            }
+        } catch (err) {
+            setErrors("Something went wrong");
+        } finally {
+            setTimeout(() => {
+                setLoading(false)
+            }, 100)
+        }
+    }
     const handleGoogle = () => {
         // TODO: hook up Google sign-in (e.g. Firebase signInWithPopup)
         console.log('Google sign-in as', role)
     }
 
     return (
-        <div className="login-container-content">
-            <div className="login-box lp-card">
-                <div className="lp-header">
-                    <span className="lp-role-icon">
-                        <Icon size={22} />
-                    </span>
-                    <div>
-                        <h2>Sign in as {title}</h2>
-                        <p className="login-sub">Use your email or continue with Google.</p>
-                    </div>
-                </div>
-
-                <button type="button" className="google-btn" onClick={handleGoogle}>
-                    <GoogleIcon />
-                    Continue with Google
-                </button>
-
-                <div className="divider"><span>or</span></div>
-
-                <form className="lp-form" onSubmit={handleSubmit} noValidate>
-                    <div className={`field ${errors.email ? 'has-error' : ''}`}>
-                        <label htmlFor="email">Email</label>
-                        <input
-                            id="email"
-                            type="email"
-                            autoComplete="email"
-                            placeholder="you@example.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            aria-invalid={!!errors.email}
-                            aria-describedby={errors.email ? 'email-error' : undefined}
-                        />
-                        {errors.email && <span className="field-error" id="email-error">{errors.email}</span>}
-                    </div>
-
-                    <div className={`field ${errors.password ? 'has-error' : ''}`}>
-                        <label htmlFor="password">Password</label>
-                        <div className="password-wrap">
-                            <input
-                                id="password"
-                                type={showPassword ? 'text' : 'password'}
-                                autoComplete="current-password"
-                                placeholder="Enter your password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                aria-invalid={!!errors.password}
-                                aria-describedby={errors.password ? 'password-error' : undefined}
-                            />
-                            <button
-                                type="button"
-                                className="toggle-pass"
-                                onClick={() => setShowPassword((s) => !s)}
-                                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                            >
-                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                            </button>
+        <>
+            <div>
+                <ErrorToastMessage/>
+            </div>
+            <div className="login-container-content">
+                <div className="login-box lp-card">
+                    <div className="lp-header">
+                        <span className="lp-role-icon">
+                            <Icon size={22} />
+                        </span>
+                        <div>
+                            <h2>Sign in as {title}</h2>
+                            <p className="login-sub">Use your email or continue with Google.</p>
                         </div>
-                        {errors.password && <span className="field-error" id="password-error">{errors.password}</span>}
                     </div>
 
-                    <button type="submit" className="continue-btn" disabled={loading}>
-                        {loading ? 'Signing in…' : 'Sign in'}
-                        {!loading && <LogIn size={18} />}
-                    </button>
-                </form>
-
-                <div className="lp-footer">
-                    <p>New to KhataBook Wholesale?</p>
-                    <button
-                        type="button"
-                        className="register-btn"
-                        onClick={() => (onRegister ? onRegister(role) : console.log('Register as', role))}
-                    >
-                        <UserPlus size={18} />
-                        Register as {title}
+                    <button type="button" className="google-btn" onClick={handleGoogle}>
+                        <GoogleIcon />
+                        Continue with Google
                     </button>
 
-                    <button type="button" className="back-btn" onClick={onBack}>
-                        <ArrowLeft size={16} />
-                        Change role
-                    </button>
+                    <div className="divider"><span>or</span></div>
+
+                    <form className="lp-form" onSubmit={handleSubmit} noValidate>
+                        <div className={`field ${errors.email ? 'has-error' : ''}`}>
+                            <label htmlFor="email">Email</label>
+                            <input
+                                id="email"
+                                type="email"
+                                autoComplete="email"
+                                placeholder="you@example.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                aria-invalid={!!errors.email}
+                                aria-describedby={errors.email ? 'email-error' : undefined}
+                            />
+                            {errors.email && <span className="field-error" id="email-error">{errors.email}</span>}
+                        </div>
+
+                        <div className={`field ${errors.password ? 'has-error' : ''}`}>
+                            <label htmlFor="password">Password</label>
+                            <div className="password-wrap">
+                                <input
+                                    id="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    autoComplete="current-password"
+                                    placeholder="Enter your password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    aria-invalid={!!errors.password}
+                                    aria-describedby={errors.password ? 'password-error' : undefined}
+                                />
+                                <button
+                                    type="button"
+                                    className="toggle-pass"
+                                    onClick={() => setShowPassword((s) => !s)}
+                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
+                            {errors.password && <span className="field-error" id="password-error">{errors.password}</span>}
+                        </div>
+
+                        <button type="submit" className="continue-btn" disabled={loading}>
+                            {loading ? 'Signing in…' : 'Sign in'}
+                            {!loading && <LogIn size={18} />}
+                        </button>
+                    </form>
+
+                    <div className="lp-footer">
+                        <p>New to KhataBook Wholesale?</p>
+                        <button
+                            type="button"
+                            className="register-btn"
+                            onClick={() => (onRegister ? onRegister(role) : console.log('Register as', role))}
+                        >
+                            <UserPlus size={18} />
+                            Register as {title}
+                        </button>
+
+                        <button type="button" className="back-btn" onClick={onBack}>
+                            <ArrowLeft size={16} />
+                            Change role
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     )
 }
 

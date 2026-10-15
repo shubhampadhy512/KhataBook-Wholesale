@@ -23,6 +23,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
     // Get all field which required are provided by user 
 
     const { username, email, phonenumber, role, password } = req.body
+    console.log(role)
 
     if ([username, email].some(data => !data || data?.trim() === "")) {
         return res.status(400).json({
@@ -69,7 +70,10 @@ const registerUser = asyncHandler(async (req, res, next) => {
 
 const loginUser = asyncHandler(async (req, res, next) => {
     // req to get data 
-    const { username, email, password } = req.body
+    console.log("Backend start")
+    const { username, email, password, role } = req.body
+
+    console.log({ username, email, password, role })
 
     if (!username && !email) {
         return res.status(400).json({
@@ -77,17 +81,22 @@ const loginUser = asyncHandler(async (req, res, next) => {
         })
     }
 
-    // check the password is correct or not 
+
+    // to check the user exist or not
     const finduser = await User.findOne({
         $or: [{ email }, { username }]
     })
-    // to check the user exist or not 
     if (!finduser) {
         return res.status(404).json({
             message: "Invalid Username or Email_Id"
         })
     }
 
+    if (finduser.role != role) {
+        return res.status(404).json({
+            message: `You're not registered as a ${role[0].toUpperCase()}${role.slice(1)}`
+        })
+    }
     //check the password valid or not 
 
     const isPassword = await finduser.isPasswordMatch(password);
@@ -116,4 +125,9 @@ const loginUser = asyncHandler(async (req, res, next) => {
         })
 })
 
-module.exports = { registerUser, loginUser }
+const profileUser = asyncHandler(async (req, res, next) => {
+    console.log(req.body)
+    return res.send("Welcome User to my website")
+})
+
+module.exports = { registerUser, loginUser, profileUser }
