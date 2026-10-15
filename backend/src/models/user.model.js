@@ -29,6 +29,10 @@ const userSchema = new mongoose.Schema({
         enum: ["storeman", "merchant"],
         default: "merchant"
     },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
     refreshToken: {
         type: String
     }
@@ -41,7 +45,6 @@ userSchema.pre("save", async function () {
 });
 
 userSchema.methods.isPasswordMatch = async function (password) {
-    console.log(await bcrypt.compare(password, this.password))
     return await bcrypt.compare(password, this.password)
 }
 

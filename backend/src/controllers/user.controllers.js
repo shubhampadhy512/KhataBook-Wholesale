@@ -1,5 +1,7 @@
 const asyncHandler = require("../utils/asyncHandler.js")
 const User = require("../models/user.model.js")
+const { sendOtp } = require("../utils/sendotp.js");
+const OtpSchema = require("../models/OtpSchema.js");
 
 const generateAccessandRefreshToken = async (userId) => {
     try {
@@ -22,8 +24,7 @@ const generateAccessandRefreshToken = async (userId) => {
 const registerUser = asyncHandler(async (req, res, next) => {
     // Get all field which required are provided by user 
 
-    const { username, email, phonenumber, role, password } = req.body
-    console.log(role)
+    const { username, email } = req.body
 
     if ([username, email].some(data => !data || data?.trim() === "")) {
         return res.status(400).json({
@@ -44,6 +45,65 @@ const registerUser = asyncHandler(async (req, res, next) => {
         })
     }
 
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const sendotp = await sendOtp(email, username, otp);
+
+    if (sendotp.accepted.length === 0) {
+        return res.status(502).json({
+            message: "Could not send OTP email"
+        });
+    }
+
+    const createotp = await OtpSchema.create({
+        email: email,
+        otpHash: otp,
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000)
+    })
+
+    return res.status(201).json({
+        message: "Check your E-Mail"
+    })
+})
+
+const registerVerification = asyncHandler(async (req, res, next) => {
+    // check the otp verification 
+    const { username, email, phonenumber, password, otp, role } = req.body
+
+    if (!otp) {
+        return res.status(400).json({
+            message: "Fill up all box"
+        })
+    }
+
+    //check time 
+    const record = await OtpSchema.findOne({ email: email })
+
+    if (!record || record.expiresAt < new Date()) {
+        if (record) await OtpSchema.deleteOne({ _id: record._id });
+        return res.status(400).json({
+            message: "OTP expired. Please request a new one."
+        });
+    }
+    //check attempts
+    if (record.attempts < 0) {
+        await OtpSchema.deleteOne({ _id: record._id });
+        return res.status(429).json({
+            message: "Too many attempt"
+        })
+    }
+
+    //check otp
+    const matchOtp = await record.isOtpMatch(otp)
+
+    if (!matchOtp) {
+        record.attempts -= 1;
+        await record.save()
+        return res.status(405).json({
+            messsage: "Incorrect Otp"
+        })
+    }
+
+
     // All test cases is verfied then create new user in mongo db
 
     const user = await User.create({
@@ -62,10 +122,12 @@ const registerUser = asyncHandler(async (req, res, next) => {
             _id: newuser._id,
             username: newuser.username,
             email: newuser.email,
+            role: role,
             phonenumber: newuser.phonenumber
         }
 
     })
+
 })
 
 const loginUser = asyncHandler(async (req, res, next) => {
@@ -130,4 +192,4 @@ const profileUser = asyncHandler(async (req, res, next) => {
     return res.send("Welcome User to my website")
 })
 
-module.exports = { registerUser, loginUser, profileUser }
+module.exports = { registerUser, registerVerification, loginUser, profileUser }

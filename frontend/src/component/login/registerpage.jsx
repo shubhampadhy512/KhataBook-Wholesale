@@ -1,5 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { ArrowLeft, Eye, EyeOff, UserPlus, ShieldCheck, CheckCircle2, UserCog, Store } from 'lucide-react'
+import {
+    ArrowLeft, Eye, EyeOff, UserPlus, ShieldCheck, CheckCircle2,
+    UserCog, Store, ShieldAlert,
+} from 'lucide-react'
+import { toast } from 'react-toastify'
 import './loginpage.css'     // reuses the card, field, button styles
 import './registerpage.css'
 
@@ -11,22 +15,8 @@ const roleInfo = {
 const OTP_LENGTH = 6
 const RESEND_SECONDS = 30
 
-/* ------------------------------------------------------------------
-   BACKEND STUBS - replace these with real API calls.
-   The OTP must be generated, sent and checked on the SERVER.
-   The frontend only collects the digits the user types.
-------------------------------------------------------------------- */
-async function sendOtp(phone) {
-    // e.g. await fetch('/api/auth/send-otp', { method: 'POST', body: JSON.stringify({ phone }) })
-    await new Promise((r) => setTimeout(r, 800))
-    return { ok: true }
-}
-
-async function verifyOtp(phone, code) {
-    // e.g. const res = await fetch('/api/auth/verify-otp', { method: 'POST', body: JSON.stringify({ phone, code }) })
-    await new Promise((r) => setTimeout(r, 800))
-    return { ok: code === '123456' }   // DEMO ONLY: remove this line when the backend is ready
-}
+const errorToast = (msg) =>
+    toast.error(msg, { icon: <ShieldAlert size={20} color="#e11d48" /> })
 
 function RegisterPage({ role = 'storeman', onBack, onLogin }) {
     const { title, Icon } = roleInfo[role]
@@ -57,45 +47,40 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
         return next
     }
 
+    // Used for the first send AND for resend
+    const requestOtp = async () => {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                username: form.username.trim(),
+                email: form.email.trim().toLowerCase(),
+            }),
+        })
+        const data = await response.json().catch(() => ({}))
+        return { ok: response.ok, message: data.message }
+    }
+
     const handleRegister = async (e) => {
         e.preventDefault()
         const next = validate()
         setErrors(next)
         if (Object.keys(next).length) return
-        try {
-            const response = await fetch(
-                `${import.meta.env.VITE_BACKEND_URL}/register`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    credentials: "include",
-                    body: JSON.stringify({
-                        username: form.username,
-                        email: form.email,
-                        phonenumber: form.phone,
-                        role: role,
-                        password : form.password
-                    })
-                }
-            );
-            const data = await response.json()
-            if (response.status === 401 || response.status === 404) {
-                setErrors(data.message);
-            }
 
-            console.log(response.status);
-            if (response.status === 200) {
-                setLoading(true)
+        setLoading(true)
+        try {
+            const { ok, message } = await requestOtp()
+            if (!ok) {
+                errorToast(message || 'Could not send OTP. Try again.')
+                return                                   // stay on the form
             }
-            await sendOtp(form.phone)
             setOtp(Array(OTP_LENGTH).fill(''))
             setOtpError('')
             setSeconds(RESEND_SECONDS)
             setStep('otp')
-        } catch (err) {
-            setErrors("Something went wrong");
+        } catch {
+            errorToast("Can't reach the server. Please try again.")
         } finally {
             setLoading(false)
         }
@@ -138,16 +123,39 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
             setOtpError(`Enter the ${OTP_LENGTH}-digit code.`)
             return
         }
+        console.log(code)
         setLoading(true)
         try {
-            const res = await verifyOtp(form.phone, code)
-            if (res.ok) {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/registerverification`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    username: form.username.trim(),
+                    email: form.email.trim().toLowerCase(),
+                    phonenumber: form.phone,
+                    password: form.password,
+                    role,
+                    otp: code,
+                }),
+            })
+            const data = await response.json().catch(() => ({}))
+
+            if (response.status === 201) {
                 setStep('done')
-            } else {
-                setOtpError('Incorrect code. Please try again.')
+                return
             }
+            if (response.status === 409) {               // user already exists
+                errorToast(data.message || 'User already exist')
+                setStep('form')
+                return
+            }
+            // wrong, expired or too many attempts: stay here and show the server message
+            setOtp(Array(OTP_LENGTH).fill(''))
+            setOtpError(data.message || 'Verification failed. Please try again.')
+            inputRefs.current[0]?.focus()
         } catch {
-            setOtpError('Verification failed. Please try again.')
+            setOtpError("Can't reach the server. Please try again.")
         } finally {
             setLoading(false)
         }
@@ -155,14 +163,23 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
 
     const handleResendOtp = async () => {
         if (seconds > 0) return
-        await sendOtp(form.phone)
-        setOtp(Array(OTP_LENGTH).fill(''))
-        setOtpError('')
-        setSeconds(RESEND_SECONDS)
-        inputRefs.current[0]?.focus()
+        try {
+            const { ok, message } = await requestOtp()
+            if (!ok) {
+                errorToast(message || 'Could not resend OTP.')
+                return
+            }
+            toast.success('A new OTP was sent to your email')
+            setOtp(Array(OTP_LENGTH).fill(''))
+            setOtpError('')
+            setSeconds(RESEND_SECONDS)
+            inputRefs.current[0]?.focus()
+        } catch {
+            errorToast("Can't reach the server. Please try again.")
+        }
     }
 
-    const maskedPhone = `+91 ******${form.phone.slice(-4)}`
+    const maskedEmail = form.email
 
     return (
         <div className="login-container-content">
@@ -219,8 +236,6 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
                                 {errors.password && <span className="field-error">{errors.password}</span>}
                             </div>
 
-                            {errors.form && <span className="field-error">{errors.form}</span>}
-
                             <button type="submit" className="continue-btn" disabled={loading}>
                                 {loading ? 'Sending OTP…' : 'Register & send OTP'}
                                 {!loading && <UserPlus size={18} />}
@@ -243,8 +258,8 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
                         <div className="lp-header">
                             <span className="lp-role-icon"><ShieldCheck size={22} /></span>
                             <div>
-                                <h2>Verify your number</h2>
-                                <p className="login-sub">Enter the code sent to {maskedPhone}</p>
+                                <h2>Verify your email</h2>
+                                <p className="login-sub">Enter the code sent to {maskedEmail}</p>
                             </div>
                         </div>
 
@@ -279,7 +294,9 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
                                 {seconds > 0 ? (
                                     <strong>Resend in {seconds}s</strong>
                                 ) : (
-                                    <button type="button" className="link-btn" onClick={handleResend}>Resend OTP</button>
+                                    <button type="button" className="link-btn" onClick={handleResendOtp}>
+                                        Resend OTP
+                                    </button>
                                 )}
                             </p>
                             <button type="button" className="back-btn" onClick={() => setStep('form')}>
@@ -295,7 +312,7 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
                         <span className="done-icon"><CheckCircle2 size={44} /></span>
                         <h2>You&apos;re all set!</h2>
                         <p className="login-sub">
-                            Your {title.toLowerCase()} account has been created and your number is verified.
+                            Your {title.toLowerCase()} account has been created and your email is verified.
                         </p>
                         <button type="button" className="continue-btn" onClick={onLogin}>Go to sign in</button>
                     </div>
