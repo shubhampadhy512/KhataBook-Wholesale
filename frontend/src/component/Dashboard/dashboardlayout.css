@@ -1,0 +1,202 @@
+/* Dashboard layout: sidebar + top bar (search, notifications, user) + page outlet */
+
+/* The shell is exactly one screen tall and never scrolls itself.
+   Only .dl-content scrolls, so the sidebar and top bar stay put. */
+.dl-shell {
+    display: flex;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    background: #f8fafc;
+}
+
+.dl-main {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ---------- Top bar ---------- */
+.dl-topbar {
+    flex: none;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    height: 78px;
+    padding: 0 30px;
+    background: #ffffff;
+    border-bottom: 1px solid #e8edf2;
+}
+
+/* ---------- Search ---------- */
+.dl-search {
+    flex: 1;
+    max-width: 420px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 44px;
+    padding: 0 14px;
+    border: 1.5px solid #e8edf2;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: #94a3b8;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.dl-search:focus-within {
+    border-color: #0f9d6b;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+}
+
+.dl-search input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: none;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: #0f172a;
+}
+
+.dl-search input::placeholder {
+    color: #94a3b8;
+}
+
+/* ---------- Right side ---------- */
+.dl-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.dl-icon-btn {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border: none;
+    border-radius: 12px;
+    background: none;
+    color: #475569;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.dl-icon-btn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.dl-icon-btn:focus-visible {
+    outline: 2px solid #0f9d6b;
+    outline-offset: 2px;
+}
+
+.dl-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border: 2px solid #ffffff;
+    box-sizing: content-box;
+    transform: translate(25%, -25%);
+}
+
+.dl-divider {
+    width: 1px;
+    height: 32px;
+    background: #e8edf2;
+}
+
+.dl-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dl-avatar {
+    flex: none;
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #fde7cf;
+    color: #0f172a;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.dl-user-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+}
+
+.dl-user-text strong {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.dl-user-text span {
+    font-size: 0.82rem;
+    color: #64748b;
+}
+
+/* ---------- Page area (the only scrolling region) ---------- */
+.dl-content {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* old Edge / IE */
+    padding: 32px 40px;
+}
+
+.dl-content::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Edge, Safari */
+}
+
+/* ---------- Smaller screens ---------- */
+@media (max-width: 900px) {
+    .dl-topbar {
+        padding: 0 20px;
+    }
+
+    .dl-content {
+        padding: 24px 20px;
+    }
+}
+
+@media (max-width: 640px) {
+
+    .dl-user-text,
+    .dl-divider {
+        display: none;
+    }
+}

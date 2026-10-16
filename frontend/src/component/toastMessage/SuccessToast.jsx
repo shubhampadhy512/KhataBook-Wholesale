@@ -1,6 +1,6 @@
 import { ToastContainer, Bounce, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import "../CSSfileToast/successtoast.css";
+import "../CSSfileToast/SuccessToast.css";
 
 // Call this from anywhere: showSuccessToast("Profile updated")
 export const showSuccessToast = (message, options = {}) =>

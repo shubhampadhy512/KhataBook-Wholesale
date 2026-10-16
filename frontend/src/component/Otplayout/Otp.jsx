@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { ArrowLeft, ShieldCheck } from 'lucide-react'
-import { showSuccessToast } from '../toastMessage/SuccessToast.jsx'
+import { ArrowLeft, ShieldCheck, } from 'lucide-react'
 import './Otp.css'
 
 const OTP_LENGTH = 6

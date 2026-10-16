@@ -186,9 +186,79 @@ const loginUser = asyncHandler(async (req, res, next) => {
         })
 })
 
-const profileUser = asyncHandler(async (req, res, next) => {
-    console.log(req.body)
-    return res.send("Welcome User to my website")
+const logoutUser = asyncHandler(async (req, res) => {
+    await User.findOneAndUpdate(
+        req.body._id,
+        {
+            $set: {
+                refreshToken: undefined
+            }
+        },
+        {
+            new: true
+        }
+    )
+
+    const option = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res.status(200)
+        .clearCookie("accessToken", option)
+        .clearCookie("refreshToken", option)
+        .json({
+            message: "User Logged Out!!"
+        })
+
 })
 
-module.exports = { registerUser, registerVerification, loginUser, profileUser }
+const refreshAccesstoken = asyncHandler(async (req, res, next) => {
+
+    const token = req.cookie.refreshToken || req.body.refreshToken
+    if (!token) {
+        return res.status(401).json({
+            message: 'Unauthorized refreshtoken'
+        })
+    }
+
+    try {
+        const decode = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET)
+
+        const user = await User.findById(decode?._id)
+
+        if (!user) {
+            return res.status(401).json({
+                message: "Invalid refresh token"
+            })
+        }
+
+        if (token !== user?.refreshToken) {
+            return res.status(401).json({
+                message: "Rfresh Token is expriy"
+            })
+        }
+
+        const option = {
+            httpOnly: true,
+            secure: true
+        }
+
+        const { accessToken, refreshToken } = await generateAccessandRefreshToken(user._id)
+
+        return res.status(200)
+            .cookie("accessToken", accessToken, option)
+            .cookie("refreshToken", refreshToken, option)
+            .json({
+                port: 200,
+                user: refreshToken, accessToken,
+                message: "User logged in successfully"
+            })
+    } catch (error) {
+        return res.status(401).json({
+            message: 'New refresh token is not generate'
+        })
+    }
+})
+
+module.exports = { registerUser, registerVerification, loginUser, logoutUser, refreshAccesstoken }

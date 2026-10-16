@@ -29,10 +29,6 @@ const userSchema = new mongoose.Schema({
         enum: ["storeman", "merchant"],
         default: "merchant"
     },
-    isVerified: {
-        type: Boolean,
-        default: false
-    },
     refreshToken: {
         type: String
     }

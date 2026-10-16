@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { ArrowLeft, Eye, EyeOff, LogIn, UserPlus, UserCog, Store, ShieldAlert } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff, LogIn, UserPlus, UserCog, Store, ShieldAlert, CheckCircle } from 'lucide-react'
 import { useNavigate } from "react-router-dom"
 import { toast } from 'react-toastify';
 import './loginpage.css'
@@ -75,10 +75,8 @@ function LoginPage({ role = 'storeman', onBack, onRegister }) {
                 }
             );
             const data = await response.json()
-            console.log(response.status);
             if (response.status === 200) {
-                console.log("Direct to profile page")
-                navigate("/profile");
+                navigate(`/${role}/dashboard`);
             } else if (response.status === 401 || response.status === 404) {
                 notify(data.message)
             }

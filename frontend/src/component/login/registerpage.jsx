@@ -8,6 +8,7 @@ import './loginpage.css'     // reuses the card, field, button styles
 import './registerpage.css'
 import ErrorToastMessage from '../toastMessage/errormessage'
 import OtpVerification from '../Otplayout/Otp.jsx'
+import { showSuccessToast } from '../toastMessage/SuccessToast.jsx'
 
 const roleInfo = {
     storeman: { title: 'Storeman', Icon: UserCog },
@@ -76,6 +77,11 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
         } finally {
             setLoading(false)
         }
+    }
+
+    const afterVerified = () => {
+        setStep("done")
+        showSuccessToast("User registered successfully!!!", { icon: <CheckCircle color="green" size={24} /> })
     }
 
     return (
@@ -157,7 +163,7 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
                             form={form}
                             role={role}
                             onRequestOtp={requestOtp}
-                            onVerified={() => setStep('done')}
+                            onVerified={afterVerified}
                             onEditDetails={() => setStep('form')}
                             onError={errorToast}
                         />
@@ -165,7 +171,7 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
 
                     {/* ============ STEP 3: DONE ============ */}
                     {step === 'done' && (
-                        <div className="done-box">
+                        <div div className="done-box">
                             <span className="done-icon"><CheckCircle2 size={44} /></span>
                             <h2>You&apos;re all set!</h2>
                             <p className="login-sub">
@@ -175,7 +181,7 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
                         </div>
                     )}
                 </div>
-            </div>
+            </div >
         </>
     )
 }
