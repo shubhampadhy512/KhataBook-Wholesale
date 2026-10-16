@@ -1,23 +1,22 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 import {
-    ArrowLeft, Eye, EyeOff, UserPlus, ShieldCheck, CheckCircle2,
+    ArrowLeft, Eye, EyeOff, UserPlus, CheckCircle2,
     UserCog, Store, ShieldAlert,
 } from 'lucide-react'
 import { toast } from 'react-toastify'
 import './loginpage.css'     // reuses the card, field, button styles
 import './registerpage.css'
-import ErrorToastMessage from '../toastMessage/errormessage';
+import ErrorToastMessage from '../toastMessage/errormessage'
+import OtpVerification from '../Otplayout/Otp.jsx'
 
 const roleInfo = {
     storeman: { title: 'Storeman', Icon: UserCog },
     merchant: { title: 'Merchant', Icon: Store },
 }
 
-const OTP_LENGTH = 6
-const RESEND_SECONDS = 30
-
 const errorToast = (msg) =>
     toast.error(msg, { icon: <ShieldAlert size={20} color="#e11d48" /> })
+
 
 function RegisterPage({ role = 'storeman', onBack, onLogin }) {
     const { title, Icon } = roleInfo[role]
@@ -27,11 +26,6 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
     const [showPassword, setShowPassword] = useState(false)
     const [errors, setErrors] = useState({})
     const [loading, setLoading] = useState(false)
-
-    const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''))
-    const [otpError, setOtpError] = useState('')
-    const [seconds, setSeconds] = useState(0)
-    const inputRefs = useRef([])
 
     const setField = (name) => (e) => {
         const value = name === 'phone' ? e.target.value.replace(/\D/g, '').slice(0, 10) : e.target.value
@@ -48,7 +42,7 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
         return next
     }
 
-    // Used for the first send AND for resend
+    // Used for the first send AND passed to the OTP step for resend
     const requestOtp = async () => {
         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/register`, {
             method: 'POST',
@@ -76,9 +70,6 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
                 errorToast(message || 'Could not send OTP. Try again.')
                 return                                   // stay on the form
             }
-            setOtp(Array(OTP_LENGTH).fill(''))
-            setOtpError('')
-            setSeconds(RESEND_SECONDS)
             setStep('otp')
         } catch {
             errorToast("Can't reach the server. Please try again.")
@@ -86,106 +77,6 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
             setLoading(false)
         }
     }
-
-    /* ---------------- Step 2: OTP ---------------- */
-    useEffect(() => {
-        if (step === 'otp') inputRefs.current[0]?.focus()
-    }, [step])
-
-    useEffect(() => {
-        if (step !== 'otp' || seconds <= 0) return
-        const t = setTimeout(() => setSeconds((s) => s - 1), 1000)
-        return () => clearTimeout(t)
-    }, [step, seconds])
-
-    const handleOtpChange = (i, value) => {
-        const digit = value.replace(/\D/g, '').slice(-1)
-        setOtp((prev) => prev.map((d, idx) => (idx === i ? digit : d)))
-        setOtpError('')
-        if (digit && i < OTP_LENGTH - 1) inputRefs.current[i + 1]?.focus()
-    }
-
-    const handleOtpKeyDown = (i, e) => {
-        if (e.key === 'Backspace' && !otp[i] && i > 0) inputRefs.current[i - 1]?.focus()
-    }
-
-    const handleOtpPaste = (e) => {
-        e.preventDefault()
-        const digits = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, OTP_LENGTH)
-        if (!digits) return
-        setOtp(Array.from({ length: OTP_LENGTH }, (_, i) => digits[i] || ''))
-        inputRefs.current[Math.min(digits.length, OTP_LENGTH - 1)]?.focus()
-    }
-
-    const handleVerify = async (e) => {
-        e.preventDefault()
-        const code = otp.join('')
-        if (code.length < OTP_LENGTH) {
-            setOtpError(`Enter the ${OTP_LENGTH}-digit code.`)
-            return
-        }
-        console.log(code)
-        setLoading(true)
-        try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/registerverification`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    username: form.username.trim(),
-                    email: form.email.trim().toLowerCase(),
-                    phonenumber: form.phone,
-                    password: form.password,
-                    role,
-                    otp: code,
-                }),
-            })
-            const data = await response.json()
-
-            if (response.status === 201) {
-                setStep('done')
-                return
-            }
-            if (response.status === 409) {               // user already exists
-                errorToast(data.message || 'User already exist')
-                setStep('form')
-                return
-            }
-            if (response.status === 405 || response.status === 429) {
-                errorToast(data.message)
-                setStep('form')
-                return
-            }
-            // wrong, expired or too many attempts: stay here and show the server message
-            setOtp(Array(OTP_LENGTH).fill(''))
-            setOtpError(data.message || 'Verification failed. Please try again.')
-            inputRefs.current[0]?.focus()
-        } catch {
-            setOtpError("Can't reach the server. Please try again.")
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const handleResendOtp = async () => {
-        if (seconds > 0) return
-        try {
-            const { ok, message } = await requestOtp()
-            if (!ok) {
-                errorToast(message || 'Could not resend OTP.')
-                return
-            }
-            toast.success('A new OTP was sent to your email')
-            setOtp(Array(OTP_LENGTH).fill(''))
-            setOtpError('')
-            setSeconds(RESEND_SECONDS)
-            inputRefs.current[0]?.focus()
-        } catch {
-            errorToast("Can't reach the server. Please try again.")
-        }
-    }
-
-    const maskedEmail = form.email
 
     return (
         <>
@@ -262,56 +153,14 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
 
                     {/* ============ STEP 2: OTP ============ */}
                     {step === 'otp' && (
-                        <>
-                            <div className="lp-header">
-                                <span className="lp-role-icon"><ShieldCheck size={22} /></span>
-                                <div>
-                                    <h2>Verify your email</h2>
-                                    <p className="login-sub">Enter the code sent to {maskedEmail}</p>
-                                </div>
-                            </div>
-
-                            <form className="lp-form" onSubmit={handleVerify} noValidate>
-                                <div className={`otp-row ${otpError ? 'has-error' : ''}`} onPaste={handleOtpPaste}>
-                                    {otp.map((digit, i) => (
-                                        <input
-                                            key={i}
-                                            ref={(el) => (inputRefs.current[i] = el)}
-                                            className="otp-input"
-                                            type="text"
-                                            inputMode="numeric"
-                                            autoComplete={i === 0 ? 'one-time-code' : 'off'}
-                                            maxLength={1}
-                                            value={digit}
-                                            onChange={(e) => handleOtpChange(i, e.target.value)}
-                                            onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                                            aria-label={`Digit ${i + 1} of ${OTP_LENGTH}`}
-                                        />
-                                    ))}
-                                </div>
-                                {otpError && <span className="field-error otp-error">{otpError}</span>}
-
-                                <button type="submit" className="continue-btn" disabled={loading}>
-                                    {loading ? 'Verifying…' : 'Verify & continue'}
-                                </button>
-                            </form>
-
-                            <div className="lp-footer">
-                                <p>
-                                    Didn&apos;t get the code?{' '}
-                                    {seconds > 0 ? (
-                                        <strong>Resend in {seconds}s</strong>
-                                    ) : (
-                                        <button type="button" className="link-btn" onClick={handleResendOtp}>
-                                            Resend OTP
-                                        </button>
-                                    )}
-                                </p>
-                                <button type="button" className="back-btn" onClick={() => setStep('form')}>
-                                    <ArrowLeft size={16} /> Edit details
-                                </button>
-                            </div>
-                        </>
+                        <OtpVerification
+                            form={form}
+                            role={role}
+                            onRequestOtp={requestOtp}
+                            onVerified={() => setStep('done')}
+                            onEditDetails={() => setStep('form')}
+                            onError={errorToast}
+                        />
                     )}
 
                     {/* ============ STEP 3: DONE ============ */}
@@ -327,7 +176,6 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
                     )}
                 </div>
             </div>
-
         </>
     )
 }

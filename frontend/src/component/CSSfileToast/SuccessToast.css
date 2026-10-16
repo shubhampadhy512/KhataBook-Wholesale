@@ -1,0 +1,48 @@
+.Toastify__toast.kb-success-toast {
+    --toastify-icon-color-success: #1f7a4d;
+
+    min-height: 56px;
+    padding: 12px 14px;
+    background: #ffffff;
+    color: #14231c;
+    border: 1px solid #d9e6de;
+    border-left: 4px solid #1f7a4d;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(20, 35, 28, 0.12);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.Toastify__toast.kb-success-toast .Toastify__toast-icon {
+    width: 24px;
+    margin-inline-end: 12px;
+}
+
+.Toastify__toast.kb-success-toast .Toastify__close-button {
+    color: #5b6b63;
+    opacity: 0.8;
+}
+
+.Toastify__toast.kb-success-toast .Toastify__close-button:hover {
+    color: #14231c;
+    opacity: 1;
+}
+
+.Toastify__toast.kb-success-toast .Toastify__close-button:focus-visible {
+    outline: 2px solid #1f7a4d;
+    outline-offset: 2px;
+}
+
+.Toastify__progress-bar.kb-success-progress {
+    height: 3px;
+    background: #1f7a4d;
+}
+
+@media (max-width: 480px) {
+    .Toastify__toast.kb-success-toast {
+        margin: 8px;
+        border-radius: 12px;
+    }
+}

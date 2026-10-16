@@ -77,7 +77,6 @@ const registerVerification = asyncHandler(async (req, res, next) => {
 
     //check time 
     const record = await OtpSchema.findOne({ email: email })
-
     if (!record || record.expiresAt < new Date()) {
         if (record) await OtpSchema.deleteOne({ _id: record._id });
         return res.status(400).json({
@@ -85,7 +84,7 @@ const registerVerification = asyncHandler(async (req, res, next) => {
         });
     }
     //check attempts
-    if (record.attempts < 0) {
+    if (record.attempts <= 1) {
         await OtpSchema.deleteOne({ _id: record._id });
         return res.status(429).json({
             message: "Too many attempt"
