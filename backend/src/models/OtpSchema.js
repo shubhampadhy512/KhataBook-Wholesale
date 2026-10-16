@@ -33,7 +33,6 @@ otpSchema.pre("save", async function () {
 });
 
 otpSchema.methods.isOtpMatch = async function (otp) {
-    console.log(otp)
     return await bcrypt.compare(otp, this.otpHash)
 }
 
