@@ -34,48 +34,13 @@
     border-bottom: 1px solid #e8edf2;
 }
 
-/* ---------- Search ---------- */
-.dl-search {
-    flex: 1;
-    max-width: 420px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    height: 44px;
-    padding: 0 14px;
-    border: 1.5px solid #e8edf2;
-    border-radius: 12px;
-    background: #f8fafc;
-    color: #94a3b8;
-    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-}
-
-.dl-search:focus-within {
-    border-color: #0f9d6b;
-    background: #ffffff;
-    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
-}
-
-.dl-search input {
-    flex: 1;
-    min-width: 0;
-    border: none;
-    outline: none;
-    background: none;
-    font-family: inherit;
-    font-size: 0.95rem;
-    color: #0f172a;
-}
-
-.dl-search input::placeholder {
-    color: #94a3b8;
-}
-
 /* ---------- Right side ---------- */
 .dl-actions {
     display: flex;
     align-items: center;
     gap: 16px;
+    margin-left: auto;
+    /* stays in the right corner, with or without the search bar */
 }
 
 .dl-icon-btn {

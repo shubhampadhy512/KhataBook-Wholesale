@@ -2,6 +2,7 @@ const asyncHandler = require("../utils/asyncHandler.js")
 const User = require("../models/user.model.js")
 const { sendOtp } = require("../utils/sendotp.js");
 const OtpSchema = require("../models/OtpSchema.js");
+const {Invitation} = require("../models/InvitationSchema.js")
 
 const generateAccessandRefreshToken = async (userId) => {
     const user = await User.findById(userId);
@@ -36,7 +37,6 @@ const registerUser = asyncHandler(async (req, res, next) => {
     })
 
     if (userExist) {
-        console.log("User already exist")
         return res.status(409).json({
             message: "User already exist"
         })
@@ -57,6 +57,11 @@ const registerUser = asyncHandler(async (req, res, next) => {
         expiresAt: new Date(Date.now() + 5 * 60 * 1000)
     })
 
+    if (!createotp) {
+        return res.status(500).json({
+            message: "Otp not send Retry"
+        })
+    }
     return res.status(201).json({
         message: "Check your E-Mail"
     })
@@ -176,6 +181,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
         secure: process.env.NODE_ENV === "production"
     }
 
+    console.log("Youss login with", loggedUser.username)
     return res.status(200).cookie("accessToken", accessToken, option)
         .cookie("refreshToken", refreshToken, option)
         .json({
@@ -186,7 +192,6 @@ const loginUser = asyncHandler(async (req, res, next) => {
 })
 
 const logoutUser = asyncHandler(async (req, res) => {
-    console.log('logout functionally start!!')
     await User.findOneAndUpdate(
         req.user._id,
         {
@@ -194,9 +199,7 @@ const logoutUser = asyncHandler(async (req, res) => {
                 refreshToken: undefined
             }
         },
-        {
-            new: true
-        }
+        { returnDocument: 'after' }
     )
 
     const option = {
@@ -286,9 +289,24 @@ const FindStoremanOrMerchant = asyncHandler(async (req, res, next) => {
         })
     }
 
+
+    const result = await Promise.all(
+        data.map(async (user) => {
+            const invitation = await Invitation.findOne({
+                userId: req.user._id,
+            }).select("status");
+
+            return {
+                ...user.toObject(),
+                status: invitation?.status ?? 'Decline'
+            };
+        })
+    );
+
+
     return res.status(201).json({
         message: 'This is search based on role',
-        info: data
+        info: result
     })
 })
 

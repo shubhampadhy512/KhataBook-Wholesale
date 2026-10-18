@@ -7,7 +7,7 @@ const { registerUser,
     refreshAccesstoken,
     FindStoremanOrMerchant } = require("../controllers/user.controllers.js")
 
-const { InvitationSend , Listofmessage} = require("../controllers/message.js")
+const { InvitationSend, Listofmessage, UpdateMessage, NormalMessageSeen } = require("../controllers/message.js")
 const VerifyUser = require("../middlewar/authVerifiy.js")
 
 router.route("/register").post(registerUser)
@@ -27,7 +27,10 @@ router.route("/rolebased-suggestion").get(VerifyUser, FindStoremanOrMerchant)
 
 router.route("/invitation").post(VerifyUser, InvitationSend)
 
-
 router.route("/notification").get(VerifyUser, Listofmessage)
+
+router.route("/updatenotification/:id").patch(VerifyUser, UpdateMessage)
+
+router.route("/handleseenmessage").patch(VerifyUser, NormalMessageSeen)
 
 module.exports = router

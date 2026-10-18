@@ -1,29 +1,72 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Bell, UserPlus, IndianRupee, MessageSquare } from 'lucide-react'
+import { Bell, UserPlus, IndianRupee, MessageSquare, CheckCircle2 } from 'lucide-react'
 import './notificationbell.css'
+import { showSuccessToast } from "../toastMessage/SuccessToast.jsx"
 
 const API = import.meta.env.VITE_BACKEND_URL
 
 /* ---------- Backend shape (GET /notification) ----------
    { message: 'All unread notifications',
      info: [{ _id, senderId, sendername, receiverId, message,
-              type: 'Invitation', isRead, createdAt, updatedAt }] }
+              type: 'Normal' | 'Payment' | 'Invitation',
+              status?: 'Pending' | 'Approved' | 'Decline',
+              isRead, createdAt, updatedAt }] }
 
-   The UI needs a few extra fields, so every item is converted by
-   normalize() below:
-     category -> which tab:  'payment' | 'normal'
-     status   -> 'pending' shows Approve / Decline, null = info only      */
+   Each backend type is configured once in TYPE_CONFIG:
+     icon / iconClass -> icon shown on the left
+     category         -> which tab it appears in ('payment' | 'normal')
+     actionable       -> true = has a status and Approve / Decline buttons
+     title            -> heading text                                         */
 
-const ICONS = {
-    invitation: UserPlus,
-    payment: IndianRupee,
-    message: MessageSquare,
+const TYPE_CONFIG = {
+    invitation: {
+        icon: UserPlus,
+        iconClass: 'invitation',
+        category: 'normal',
+        actionable: true,
+        title: () => 'Store invitation',
+    },
+    payment: {
+        icon: IndianRupee,
+        iconClass: 'payment',
+        category: 'payment',
+        actionable: true,
+        title: () => 'Payment approval',
+    },
+    normal: {
+        icon: MessageSquare,
+        iconClass: 'message',
+        category: 'normal',
+        actionable: false,
+        title: (n) => (n.sendername ? `Message from ${n.sendername}` : 'Notification'),
+    },
 }
 
 const TABS = [
     { key: 'payment', label: 'Payment' },
     { key: 'normal', label: 'Normal' },
 ]
+
+/* Status values sent to / expected by your PATCH route */
+const STATUS = {
+    pending: 'Pending',
+    approved: 'Approved',
+    declined: 'Decline',
+}
+
+/* Text shown in the top-right corner once a notification is answered */
+const RESULT_LABEL = {
+    [STATUS.approved]: 'Approved',
+    [STATUS.declined]: 'Declined',
+}
+
+// whatever the backend sends -> 'Pending' | 'Approved' | 'Decline' (default Pending)
+const toStatus = (raw) => {
+    const s = String(raw || '').toLowerCase()
+    if (s === 'approved') return STATUS.approved
+    if (s.startsWith('decline')) return STATUS.declined
+    return STATUS.pending
+}
 
 const timeAgo = (iso) => {
     const secs = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000)
@@ -36,24 +79,18 @@ const timeAgo = (iso) => {
 }
 
 const normalize = (n) => {
-    const type = String(n.type || '').toLowerCase()      // 'Invitation' -> 'invitation'
-    const known = type in ICONS ? type : 'message'
-    const needsAction = type === 'invitation' || type === 'payment'
-
-    const titles = {
-        invitation: 'Store invitation',
-        payment: 'Payment approval',
-        message: n.sendername ? `Message from ${n.sendername}` : 'Notification',
-    }
+    const key = String(n.type || '').toLowerCase()       // 'Invitation' -> 'invitation'
+    const cfg = TYPE_CONFIG[key] || TYPE_CONFIG.normal   // unknown types act like Normal
 
     return {
         id: n._id,
-        category: type === 'payment' ? 'payment' : 'normal',
-        type: known,
-        title: titles[known],
+        category: cfg.category,
+        icon: cfg.icon,
+        iconClass: cfg.iconClass,
+        title: cfg.title(n),
         message: n.message,
         time: timeAgo(n.createdAt),
-        status: needsAction ? 'pending' : null,
+        status: cfg.actionable ? toStatus(n.status) : null,
         read: Boolean(n.isRead),
     }
 }
@@ -63,6 +100,7 @@ function NotificationBell() {
     const [tab, setTab] = useState('payment')
     const [items, setItems] = useState([])
     const [loading, setLoading] = useState(false)
+    const [busyId, setBusyId] = useState(null)      // notification being approved / declined
     const [error, setError] = useState('')
     const rootRef = useRef(null)
 
@@ -80,7 +118,7 @@ function NotificationBell() {
             })
             const data = await res.json()
             if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`)
-
+                console.log(data)
             setItems((data.info || []).map(normalize))
         } catch (err) {
             console.log('error loading notifications', err.message)
@@ -95,24 +133,57 @@ function NotificationBell() {
         loadNotifications()
     }, [loadNotifications])
 
+
+    const isreadnormalmessage = useCallback(async () => {
+        console.log('isreadnormalmessage called');
+
+        try {
+            const res = await fetch(`${API}/handleseenmessage`, {
+                method: 'PATCH',
+                credentials: 'include'
+            });
+
+            console.log('Response status:', res.status)
+            if (!res.ok) {
+                console.log('Something went wrong in seen message section');
+            }
+            const data = res.json()
+            setItems((data.modified || []).map(normalize))
+        } catch (error) {
+            console.log('Error:', error.message);
+        }
+    }, []);
+
+
     /* Close on outside click or Escape */
     useEffect(() => {
-        if (!open) return
+        if (!open) return;
 
         const onPointerDown = (e) => {
-            if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false)
-        }
-        const onKeyDown = (e) => {
-            if (e.key === 'Escape') setOpen(false)
-        }
+            if (
+                rootRef.current &&
+                !rootRef.current.contains(e.target)
+            ) {
+                setOpen(false);
+                isreadnormalmessage();
+            }
+        };
 
-        document.addEventListener('mousedown', onPointerDown)
-        document.addEventListener('keydown', onKeyDown)
+        const onKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                setOpen(false);
+                isreadnormalmessage();
+            }
+        };
+
+        document.addEventListener('mousedown', onPointerDown);
+        document.addEventListener('keydown', onKeyDown);
+
         return () => {
-            document.removeEventListener('mousedown', onPointerDown)
-            document.removeEventListener('keydown', onKeyDown)
-        }
-    }, [open])
+            document.removeEventListener('mousedown', onPointerDown);
+            document.removeEventListener('keydown', onKeyDown);
+        };
+    }, [open, isreadnormalmessage]);
 
     /* Refresh the list each time the panel opens (not when it closes) */
     const toggle = () => {
@@ -125,23 +196,37 @@ function NotificationBell() {
     const markTabRead = () =>
         setItems((prev) => prev.map((n) => (n.category === tab ? { ...n, read: true } : n)))
 
-    /* Approve / decline: update UI right away, roll back if the server says no */
+    /* Approve / decline: wait for the server, then swap the buttons for the result */
     const respond = async (id, status) => {
-        setItems((prev) =>
-            prev.map((n) => (n.id === id ? { ...n, status, read: true } : n))
-        )
+        if (busyId) return
+        setBusyId(id)
+        setError('')
         try {
-            const res = await fetch(`${API}/notification/${id}/${status}`, {
-                method: 'POST',
+            const res = await fetch(`${API}/updatenotification/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
+                body: JSON.stringify({ status }),
             })
-            if (!res.ok) throw new Error(`Request failed (${res.status})`)
+
+            const data = await res.json().catch(() => ({}))
+            if (!res.ok) {
+                throw new Error(data.message || `Request failed (${res.status})`)
+            }
+
+            // buttons disappear, label appears in the corner, unread dot goes away
+            setItems((prev) =>
+                prev.map((n) => (n.id === id ? { ...n, status, read: true } : n))
+            )
+
+            if (status === STATUS.approved) {
+                showSuccessToast(data.message, { icon: <CheckCircle2 size={20} color="green" /> })
+            }
         } catch (err) {
             console.log('error responding to notification', err.message)
-            setItems((prev) =>
-                prev.map((n) => (n.id === id ? { ...n, status: 'pending' } : n))
-            )
-            setError('Action failed. Please try again.')
+            setError('Action failed. Please try again.')   // item stays Pending, buttons remain
+        } finally {
+            setBusyId(null)
         }
     }
 
@@ -191,6 +276,10 @@ function NotificationBell() {
                         ))}
                     </div>
 
+                    {error && visible.length > 0 && (
+                        <p className="nbell-error" role="alert">{error}</p>
+                    )}
+
                     <ul className="nbell-list" key={tab} role="tabpanel">
                         {visible.length === 0 && (
                             <li className="nbell-empty">
@@ -201,47 +290,56 @@ function NotificationBell() {
                         )}
 
                         {visible.map((n) => {
-                            const Icon = ICONS[n.type]
+                            const Icon = n.icon
+                            const answered = n.status === STATUS.approved || n.status === STATUS.declined
+
                             return (
                                 <li
                                     key={n.id}
                                     className={`nbell-item ${n.read ? '' : 'is-unread'}`}
                                 >
-                                    <span className={`nbell-icon nbell-icon--${n.type}`}>
+                                    <span className={`nbell-icon nbell-icon--${n.iconClass}`}>
                                         <Icon size={18} />
                                     </span>
 
                                     <div className="nbell-body">
                                         <div className="nbell-title-row">
                                             <strong>{n.title}</strong>
-                                            {!n.read && <span className="nbell-dot" aria-label="Unread" />}
+
+                                            {/* right corner: result once answered, otherwise the unread dot */}
+                                            {answered ? (
+                                                <span
+                                                    className={`nbell-result nbell-result--${n.status === STATUS.approved ? 'approved' : 'declined'}`}
+                                                >
+                                                    {RESULT_LABEL[n.status]}
+                                                </span>
+                                            ) : (
+                                                !n.read && <span className="nbell-dot" aria-label="Unread" />
+                                            )}
                                         </div>
                                         <p>{n.message}</p>
                                         <span className="nbell-time">{n.time}</span>
 
-                                        {n.status === 'pending' && (
+                                        {/* buttons only while still pending */}
+                                        {n.status === STATUS.pending && (
                                             <div className="nbell-actions">
                                                 <button
                                                     type="button"
                                                     className="nbell-btn nbell-btn--approve"
-                                                    onClick={() => respond(n.id, 'approved')}
+                                                    disabled={busyId === n.id}
+                                                    onClick={() => respond(n.id, STATUS.approved)}
                                                 >
                                                     Approve
                                                 </button>
                                                 <button
                                                     type="button"
                                                     className="nbell-btn nbell-btn--decline"
-                                                    onClick={() => respond(n.id, 'declined')}
+                                                    disabled={busyId === n.id}
+                                                    onClick={() => respond(n.id, STATUS.declined)}
                                                 >
                                                     Decline
                                                 </button>
                                             </div>
-                                        )}
-
-                                        {(n.status === 'approved' || n.status === 'declined') && (
-                                            <span className={`nbell-result nbell-result--${n.status}`}>
-                                                {n.status === 'approved' ? 'Approved' : 'Declined'}
-                                            </span>
                                         )}
                                     </div>
                                 </li>

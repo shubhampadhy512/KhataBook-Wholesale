@@ -6,15 +6,15 @@ const InvitationSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    tosenduser_id: {
+    receive_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
     status: {
         type: String,
-        enum: ['Pending', 'Accept', 'Decline'],
-        default: 'Pending'
+        enum: ['Pending', 'Approved', 'Decline'],
+        default: 'Decline'
     },
     connection: {
         type: mongoose.Schema.Types.ObjectId,

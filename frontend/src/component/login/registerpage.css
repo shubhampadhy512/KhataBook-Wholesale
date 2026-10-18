@@ -12,7 +12,7 @@
     padding: 0 14px;
     border: 1.5px solid #e8edf2;
     border-right: none;
-    border-radius: 12px 0 0 12px;
+    border-radius: 14px 0 0 14px;
     background: #f1f5f9;
     font-size: 0.95rem;
     font-weight: 600;
@@ -20,11 +20,237 @@
 }
 
 .lp-card .phone-wrap input {
-    border-radius: 0 12px 12px 0;
+    border-radius: 0 14px 14px 0;
 }
 
 .field.has-error .phone-prefix {
     border-color: #dc2626;
+}
+
+/* ---------- Page position (form step only) ----------
+   The card sits near the top instead of the vertical centre, so it can grow
+   when error messages appear without pushing the page into a scroll.
+   Scoped with .register-page so the login page is not affected. */
+.login-container-content.register-page {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    box-sizing: border-box;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: clamp(12px, 3vh, 32px) 16px 24px;
+}
+
+/* ---------- Registration card (form step only) ----------
+   One centred card: header + role pill, two sections on a 12-column grid,
+   full-width button, then the sign-in footer.
+   The OTP and success steps keep the normal card. */
+.login-box.register-card {
+    width: 100%;
+    max-width: 480px;
+    padding: 22px 28px 18px;
+    border-radius: 22px;
+}
+
+/* ----- Header ----- */
+.reg-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.reg-head h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #0f172a;
+}
+
+.reg-pill {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border: 1px solid #a7f3d0;
+    border-radius: 999px;
+    background: #d1fae5;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #065f46;
+}
+
+/* ----- Form grid ----- */
+.reg-form {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 10px 14px;
+}
+
+.reg-form .field {
+    min-width: 0;
+    margin: 0;
+}
+
+.reg-form .field label {
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.reg-form .field input {
+    height: 40px;
+    border-radius: 14px;
+}
+
+.col-4 {
+    grid-column: span 4;
+}
+
+.col-6 {
+    grid-column: span 6;
+}
+
+.col-8 {
+    grid-column: span 8;
+}
+
+.col-12 {
+    grid-column: 1 / -1;
+}
+
+.reg-section {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.reg-section~.reg-section {
+    margin-top: 8px;
+}
+
+.field-hint {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.74rem;
+    line-height: 1.35;
+    color: #64748b;
+}
+
+/* ----- Button ----- */
+.reg-form .continue-btn {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 46px;
+    margin-top: 6px;
+    border: none;
+    border-radius: 14px;
+    background: #059669;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    box-shadow: 0 8px 18px rgba(5, 150, 105, 0.3);
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s, opacity 0.2s;
+}
+
+.reg-form .continue-btn:hover:not(:disabled) {
+    background: #047857;
+    box-shadow: 0 10px 22px rgba(5, 150, 105, 0.38);
+}
+
+.reg-form .continue-btn:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+/* ----- Footer ----- */
+.reg-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-top: 12px;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.reg-footer p {
+    margin: 0;
+}
+
+.reg-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    font-weight: 600;
+    color: #059669;
+    cursor: pointer;
+}
+
+.reg-link--bold {
+    font-weight: 700;
+}
+
+.reg-link:hover {
+    text-decoration: underline;
+}
+
+.reg-link:focus-visible {
+    outline: 2px solid #059669;
+    outline-offset: 3px;
+    border-radius: 6px;
+}
+
+/* short screens (small laptops): tighten a little more */
+@media (max-height: 760px) {
+    .login-box.register-card {
+        padding: 16px 26px 12px;
+    }
+
+    .reg-head {
+        margin-bottom: 8px;
+    }
+
+    .reg-form {
+        gap: 7px 14px;
+    }
+
+    .reg-form .field input {
+        height: 38px;
+    }
+
+    .reg-footer {
+        margin-top: 8px;
+        gap: 2px;
+    }
+}
+
+/* small phones: one field per row */
+@media (max-width: 440px) {
+    .login-box.register-card {
+        padding: 22px 18px 18px;
+    }
+
+    .col-4,
+    .col-6,
+    .col-8 {
+        grid-column: 1 / -1;
+    }
 }
 
 /* ---------- Success step ---------- */

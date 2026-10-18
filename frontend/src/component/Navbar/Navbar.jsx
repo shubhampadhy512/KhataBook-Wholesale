@@ -22,7 +22,7 @@ const MENUS = {
     subtitle: 'Merchant portal',
     items: [
       { to: '/merchant/dashboard', label: 'Dashboard', icon: LayoutGrid, end: true },
-      { to: '/merchant/ledger', label: 'My Ledger', icon: BookOpen },
+      { to: '/merchant/ledger', label: 'History', icon: BookOpen },
       { to: '/merchant/payments', label: 'My Payments', icon: CreditCard },
       { to: '/merchant/submit-payment', label: 'Submit Payment', icon: Send },
       { to: '/merchant/chat', label: 'Chat', icon: MessageSquare, badgeKey: 'chat' },

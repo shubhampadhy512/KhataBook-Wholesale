@@ -13,14 +13,15 @@ const NotificationSchema = new mongoose.Schema({
     receiverId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: true,
+        unique: true
     },
     message: {
         type: String
     },
     type: {
         type: String,
-        enum: ['Payment', 'Invitation']
+        enum: ['Payment', 'Invitation', 'Normal']
     },
     isRead: {
         type: Boolean,
@@ -28,6 +29,18 @@ const NotificationSchema = new mongoose.Schema({
     }
 }, { timestamps: true }
 )
+
+NotificationSchema.methods.sendNotification = async (prev) => {
+
+    return notification = await Notification.create({
+        senderId: prev.user_id,
+        sendername: prev.username,
+        receiverId: prev.tosenduser_id,
+        message: `${prev.username} sent you an invitation`,
+        type: "Invitation",
+        isRead: prev.isRead
+    })
+}
 
 
 module.exports = mongoose.model("Notification", NotificationSchema)

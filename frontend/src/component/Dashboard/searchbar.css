@@ -32,6 +32,15 @@
     color: #0f9d6b;
 }
 
+/* On focus the search icon and the "Search…" placeholder disappear */
+.sb-wrap.is-focused .sb-icon {
+    display: none;
+}
+
+.sb input:focus::placeholder {
+    color: transparent;
+}
+
 .sb input {
     flex: 1;
     min-width: 0;
@@ -160,9 +169,35 @@
     transition: background 0.15s, border-color 0.15s;
 }
 
-.sb-add:hover {
+.sb-add:hover:not(:disabled) {
     background: #e6f6ef;
     border-color: #9fdcc2;
+}
+
+/* sending in progress */
+.sb-add:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+
+/* Approved (connected): filled green, check icon, not clickable */
+.sb-add.is-approved,
+.sb-add.is-approved:disabled {
+    background: #0f9d6b;
+    border-color: #0f9d6b;
+    color: #ffffff;
+    opacity: 1;
+    cursor: default;
+}
+
+/* invitation sent, waiting for a reply: amber clock, not clickable */
+.sb-add.is-pending,
+.sb-add.is-pending:disabled {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #c2410c;
+    opacity: 1;
+    cursor: default;
 }
 
 .sb-state {
