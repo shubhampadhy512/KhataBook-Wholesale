@@ -75,6 +75,7 @@ function OtpVerification({ form, role, onRequestOtp, onVerified, onEditDetails, 
                     email: form.email.trim().toLowerCase(),
                     phonenumber: form.phone,
                     password: form.password,
+                    addresses:form.address,
                     role,
                     otp: String(code).trim()
                 }),

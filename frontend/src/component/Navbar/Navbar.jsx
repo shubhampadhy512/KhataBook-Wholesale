@@ -75,7 +75,6 @@ function Navbar({ role = 'storeman', badges = {} }) {
       )
       const data = response.json()
       if (response.status === 200) {
-        // Clear frontend authentication state
         navigate("/");
       }
       console.log(data.message);

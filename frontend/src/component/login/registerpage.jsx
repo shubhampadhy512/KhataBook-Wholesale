@@ -23,7 +23,7 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
     const { title, Icon } = roleInfo[role]
 
     const [step, setStep] = useState('form')          // 'form' | 'otp' | 'done'
-    const [form, setForm] = useState({ username: '', email: '', phone: '', password: '' })
+    const [form, setForm] = useState({ username: '', email: '', phone: '', address: '', password: '' })
     const [showPassword, setShowPassword] = useState(false)
     const [errors, setErrors] = useState({})
     const [loading, setLoading] = useState(false)
@@ -39,6 +39,7 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
         if (form.username.trim().length < 3) next.username = 'Username must be at least 3 characters.'
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) next.email = 'Enter a valid email address.'
         if (!/^[6-9]\d{9}$/.test(form.phone)) next.phone = 'Enter a valid 10-digit mobile number.'
+        if (!form.address.trim()) next.address = 'Address is required.'
         if (form.password.length < 6) next.password = 'Password must be at least 6 characters.'
         return next
     }
@@ -124,6 +125,14 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
                                             value={form.phone} onChange={setField('phone')} />
                                     </div>
                                     {errors.phone && <span className="field-error">{errors.phone}</span>}
+                                </div>
+
+                                <div className={`field ${errors.address ? 'has-error' : ''}`}>
+                                    <label htmlFor="address">Address</label>
+                                    <input id="address" type="text" autoComplete="street-address"
+                                        placeholder="Shop / street, area, city"
+                                        value={form.address} onChange={setField('address')} />
+                                    {errors.address && <span className="field-error">{errors.address}</span>}
                                 </div>
 
                                 <div className={`field ${errors.password ? 'has-error' : ''}`}>

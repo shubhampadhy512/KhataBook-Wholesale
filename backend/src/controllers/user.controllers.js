@@ -4,21 +4,18 @@ const { sendOtp } = require("../utils/sendotp.js");
 const OtpSchema = require("../models/OtpSchema.js");
 
 const generateAccessandRefreshToken = async (userId) => {
-    try {
-        const user = User.findById(userId);
-        const accessToken = User.generateAccessToken()
-        const refreshToken = User.generateRefreshToken()
-
-        user.refreshToken = refreshToken
-        await user.save({ validateBeforeSave: false })
-
-        return { accessToken, refreshToken }
-    } catch (err) {
-        return {
-            port: 500,
-            message: "Something gone wrong during creating access and referesh Token"
-        }
+    const user = await User.findById(userId);
+    if (!user) {
+        throw new Error("User not found while generating tokens");
     }
+
+    const accessToken = user.generateAccessToken()
+    const refreshToken = user.generateRefreshToken()
+
+    user.refreshToken = refreshToken
+    await user.save({ validateBeforeSave: false })
+
+    return { accessToken, refreshToken }
 }
 
 const registerUser = asyncHandler(async (req, res, next) => {
@@ -67,13 +64,16 @@ const registerUser = asyncHandler(async (req, res, next) => {
 
 const registerVerification = asyncHandler(async (req, res, next) => {
     // check the otp verification 
-    const { username, email, phonenumber, password, otp, role } = req.body
+    const { username, email, phonenumber, password, addresses, otp, role } = req.body
 
     if (!otp) {
         return res.status(400).json({
             message: "Fill up all box"
         })
     }
+
+    const finalUsername =
+        role === "storeman" ? `${username} Store` : username;
 
     //check time 
     const record = await OtpSchema.findOne({ email: email })
@@ -106,10 +106,11 @@ const registerVerification = asyncHandler(async (req, res, next) => {
     // All test cases is verfied then create new user in mongo db
 
     const user = await User.create({
-        username,
+        username: finalUsername,
         email,
         phonenumber,
         role,
+        addresses,
         password
     })
 
@@ -121,6 +122,7 @@ const registerVerification = asyncHandler(async (req, res, next) => {
             _id: newuser._id,
             username: newuser.username,
             email: newuser.email,
+            addresses: newuser.addresses,
             role: role,
             phonenumber: newuser.phonenumber
         }
@@ -131,10 +133,7 @@ const registerVerification = asyncHandler(async (req, res, next) => {
 
 const loginUser = asyncHandler(async (req, res, next) => {
     // req to get data 
-    console.log("Backend start")
     const { username, email, password, role } = req.body
-
-    console.log({ username, email, password, role })
 
     if (!username && !email) {
         return res.status(400).json({
@@ -170,25 +169,26 @@ const loginUser = asyncHandler(async (req, res, next) => {
 
     const { accessToken, refreshToken } = await generateAccessandRefreshToken(finduser._id)
 
-    const loggedUser = await User.findById(finduser._id).select("-password -refreshToken")
+    const loggedUser = await User.findById(finduser._id).select("-password -refreshToken -email -role")
 
     const option = {
         httpOnly: true,
-        secure: true
+        secure: process.env.NODE_ENV === "production"
     }
 
     return res.status(200).cookie("accessToken", accessToken, option)
         .cookie("refreshToken", refreshToken, option)
         .json({
             port: 200,
-            user: loggedUser, refreshToken, accessToken,
+            user: loggedUser,
             message: "User logged in successfully"
         })
 })
 
 const logoutUser = asyncHandler(async (req, res) => {
+    console.log('logout functionally start!!')
     await User.findOneAndUpdate(
-        req.body._id,
+        req.user._id,
         {
             $set: {
                 refreshToken: undefined
@@ -201,7 +201,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 
     const option = {
         httpOnly: true,
-        secure: true
+        secure: process.env.NODE_ENV === "production"
     }
 
     return res.status(200)
@@ -215,7 +215,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 const refreshAccesstoken = asyncHandler(async (req, res, next) => {
 
-    const token = req.cookie.refreshToken || req.body.refreshToken
+    const token = req.cookies?.refreshToken || req.body.refreshToken
     if (!token) {
         return res.status(401).json({
             message: 'Unauthorized refreshtoken'
@@ -241,7 +241,7 @@ const refreshAccesstoken = asyncHandler(async (req, res, next) => {
 
         const option = {
             httpOnly: true,
-            secure: true
+            secure: process.env.NODE_ENV === "production"
         }
 
         const { accessToken, refreshToken } = await generateAccessandRefreshToken(user._id)
@@ -261,4 +261,35 @@ const refreshAccesstoken = asyncHandler(async (req, res, next) => {
     }
 })
 
-module.exports = { registerUser, registerVerification, loginUser, logoutUser, refreshAccesstoken }
+const FindStoremanOrMerchant = asyncHandler(async (req, res, next) => {
+
+    const { searched } = req.query
+    if (!searched) {
+        return res.status(400).json({
+            meassage: "Not found anything"
+        })
+    }
+    const regx = new RegExp(
+        searched.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+        "i"
+    );
+    const { role } = req.user
+    const oppositeRole = role === "merchant" ? "storeman" : "merchant";
+    const data = await User.find({
+        role: oppositeRole,
+        username: regx
+    }).sort({ username: 1 }).limit(5).select("-password -refreshToken -email -phonenumber")
+
+    if (!data) {
+        return res.status(400).json({
+            meassage: "Not found anything"
+        })
+    }
+
+    return res.status(201).json({
+        message: 'This is search based on role',
+        info: data
+    })
+})
+
+module.exports = { registerUser, registerVerification, loginUser, logoutUser, refreshAccesstoken, FindStoremanOrMerchant }

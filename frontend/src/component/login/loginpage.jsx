@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { ArrowLeft, Eye, EyeOff, LogIn, UserPlus, UserCog, Store, ShieldAlert, CheckCircle } from 'lucide-react'
 import { useNavigate } from "react-router-dom"
 import { toast } from 'react-toastify';
+import { useDispatch } from 'react-redux'
+import { UserInfo } from "../../features/role"
 import './loginpage.css'
 import ErrorToastMessage from '../toastMessage/errormessage';
 
@@ -34,6 +36,8 @@ function LoginPage({ role = 'storeman', onBack, onRegister }) {
     const [errors, setErrors] = useState({})
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+
 
     const validate = () => {
         const next = {}
@@ -70,13 +74,24 @@ function LoginPage({ role = 'storeman', onBack, onRegister }) {
                     body: JSON.stringify({
                         email,
                         password,
-                        role
+                        role,
                     })
                 }
             );
             const data = await response.json()
+            console.log(data.user);
+            const { username, addresses, phonenumber } = data.user;
             if (response.status === 200) {
-                navigate(`/${role}/dashboard`);
+                dispatch(
+                    UserInfo({
+                        email,
+                        role,
+                        username,
+                        phone: phonenumber,
+                        addresses
+                    })
+                )
+                navigate(`/${role}/dashboard`)
             } else if (response.status === 401 || response.status === 404) {
                 notify(data.message)
             }
