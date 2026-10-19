@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { Search, UserPlus, UserCheck, Clock, UserCog, Store, User, CheckCircle2 } from 'lucide-react'
 import './searchbar.css'
 import { showSuccessToast } from "../toastMessage/SuccessToast.jsx"
@@ -167,9 +166,6 @@ function SearchBar() {
                     </ul>
                 </div>
             )}
-
-            {/* blurred page behind the search (portal, so the top bar's blur doesn't trap it) */}
-            {focused && createPortal(<div className="sb-overlay" />, document.body)}
         </div>
     )
 }

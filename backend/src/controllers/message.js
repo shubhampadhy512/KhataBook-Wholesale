@@ -17,7 +17,8 @@ const InvitationSend = asyncHandler(async (req, res) => {
 
     const already = await Invitation.findOne({
         userId: user_id,
-        receive_id: receive_id
+        receive_id: receive_id,
+        // $or:[{status:'Pending'},{status:'Pending'}]
     });
 
     if (already) {
@@ -95,7 +96,6 @@ const UpdateMessage = asyncHandler(async (req, res) => {
     },
         { returnDocument: 'after' }
     )
-
     // Find the notification and verify the recipient
     const seenmessage = await Notification.findOne({
         _id: id,
