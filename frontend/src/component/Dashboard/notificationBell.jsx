@@ -133,7 +133,6 @@ function NotificationBell() {
         loadNotifications()
     }, [loadNotifications])
 
-
     const isreadnormalmessage = useCallback(async () => {
         console.log('isreadnormalmessage called');
 

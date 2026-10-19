@@ -151,13 +151,16 @@ const loginUser = asyncHandler(async (req, res, next) => {
     const finduser = await User.findOne({
         $or: [{ email }, { username }]
     })
+    // console.log(finduser)
     if (!finduser) {
+    // console.log(finduser)
         return res.status(404).json({
             message: "Invalid Username or Email_Id"
         })
     }
 
     if (finduser.role != role) {
+    console.log(finduser)
         return res.status(404).json({
             message: `You're not registered as a ${role[0].toUpperCase()}${role.slice(1)}`
         })
@@ -303,7 +306,7 @@ const FindStoremanOrMerchant = asyncHandler(async (req, res, next) => {
         })
     );
 
-
+    console.log(result)
     return res.status(201).json({
         message: 'This is search based on role',
         info: result

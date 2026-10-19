@@ -79,22 +79,13 @@ function LoginPage({ role = 'storeman', onBack, onRegister }) {
                 }
             );
             const data = await response.json()
-            console.log(data.user);
-            const { username, addresses, phonenumber } = data.user;
             if (response.status === 200) {
-                dispatch(
-                    UserInfo({
-                        email,
-                        role,
-                        username,
-                        phone: phonenumber,
-                        addresses
-                    })
-                )
                 navigate(`/${role}/dashboard`)
-            } else if (response.status === 401 || response.status === 404) {
+            }
+            if (response.status === 401 || response.status === 404) {
                 notify(data.message)
             }
+
         } catch (err) {
             notify("Something went wrong")
         } finally {

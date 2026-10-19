@@ -29,17 +29,8 @@ const NotificationSchema = new mongoose.Schema({
 }, { timestamps: true }
 )
 
-NotificationSchema.methods.sendNotification = async (prev) => {
-
-    return notification = await Notification.create({
-        senderId: prev.user_id,
-        sendername: prev.username,
-        receiverId: prev.tosenduser_id,
-        message: `${prev.username} sent you an invitation`,
-        type: "Invitation",
-        isRead: prev.isRead
-    })
-}
-
+NotificationSchema.statics.sendNotification = async function ({ senderId, sendername, receiverId, message, type, isRead = false }) {
+    return this.create({ senderId, sendername, receiverId, message, type, isRead });
+};
 
 module.exports = mongoose.model("Notification", NotificationSchema)

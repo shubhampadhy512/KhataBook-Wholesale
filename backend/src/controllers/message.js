@@ -2,12 +2,13 @@ const asyncHandler = require("../utils/asyncHandler.js");
 const { Invitation, Connection } = require("../models/InvitationSchema.js");
 const Notification = require("../models/notification.js");
 
+
 const InvitationSend = asyncHandler(async (req, res) => {
     const user_id = req.user?._id;
     const username = req.user?.username;
     const receive_id = req.body._id;
     const recipientUsername = req.body.username;
-
+    console.log(req.user, req.body)
 
     if (!user_id || !receive_id || !recipientUsername || !username) {
         return res.status(400).json({
@@ -17,8 +18,7 @@ const InvitationSend = asyncHandler(async (req, res) => {
 
     const already = await Invitation.findOne({
         userId: user_id,
-        receive_id: receive_id,
-        // $or:[{status:'Pending'},{status:'Pending'}]
+        receive_id: receive_id
     });
 
     if (already) {
@@ -40,18 +40,24 @@ const InvitationSend = asyncHandler(async (req, res) => {
         expiresDate: new Date(Date.now() + 24 * 60 * 60 * 1000)
     });
 
-    await Notification.create({
+    // await Notification.create({
+    //     senderId: user_id,
+    //     sendername: username,
+    //     receiverId: receive_id,
+    //     message: `${username} sent you an invitation`,
+    //     type: "Invitation"
+    // });
+    const type = 'Invitation'
+    const message = `${username} sent you an ${type}`
+    const notificaiton = await Notification.sendNotification({
         senderId: user_id,
         sendername: username,
         receiverId: receive_id,
-        message: `${username} sent you an invitation`,
-        type: "Invitation"
+        message,
+        type
     });
 
-    // const type = 'invitation'
-    // const message =  `${username} sent you an ${type}`
-    // const notificaiton = Notification.sendNotification(user_id,username,receive_id,message,type)
-
+    console.log(notificaiton)
     return res.status(201).json({
         message: `Invitation sent to ${recipientUsername}`,
         invitation
@@ -67,7 +73,7 @@ const Listofmessage = asyncHandler(async (req, res) => {
         });
     }
 
-    // console.log(req.user)
+    console.log(req.user)
     const notifications = await Notification.find({
         receiverId: user_id,
         isRead: false
