@@ -5,7 +5,11 @@ const { registerUser,
     loginUser,
     logoutUser,
     refreshAccesstoken,
-    FindStoremanOrMerchant } = require("../controllers/user.controllers.js")
+    FindStoremanOrMerchant,
+    resendOtp,
+    ResetPassword,
+    VerifyOtp,
+    Changepass_validateEmail } = require("../controllers/user.controllers.js")
 
 const { InvitationSend, Listofmessage, UpdateMessage, NormalMessageSeen } = require("../controllers/message.js")
 const VerifyUser = require("../middlewar/authVerifiy.js")
@@ -19,6 +23,14 @@ router.route("/login").post(loginUser)
 router.route("/logout").post(VerifyUser, logoutUser)
 
 router.route("/refreshacces-token").post(refreshAccesstoken)
+
+router.route("/forgot-password/send-otp").post(Changepass_validateEmail)
+
+router.route("/forgot-password/verfiy-otp").post(VerifyOtp)
+
+router.route("/forgot-password/reset").patch(ResetPassword)
+
+router.route("/resendOtp").post(resendOtp)
 
 
 router.route("/rolebased-suggestion").get(VerifyUser, FindStoremanOrMerchant)

@@ -11,6 +11,9 @@ import MerchantDashboard from "./component/Dashboard/mercdashcontent/merchdashco
 import StoremanDashboard from "./component/Dashboard/storedashcontent/storedashcontent.jsx";
 import MerchantPayments from "./component/merchant/jsx/MerchantPayment.jsx";
 import MerchantSubmitPayment from "./component/merchant/jsx/MerchantSubmitpayment.jsx";
+import AddHistory from "./component/storeman/addHistory.jsx";
+import ForgotPassword from "./component/login/forgotpassword.jsx";
+
 
 export {
     Navbar,
@@ -23,6 +26,8 @@ export {
     MerchantDashboard,
     StoremanDashboard,
     MerchantPayments,
-    MerchantSubmitPayment
+    MerchantSubmitPayment,
+    AddHistory,
+    ForgotPassword
 };
 

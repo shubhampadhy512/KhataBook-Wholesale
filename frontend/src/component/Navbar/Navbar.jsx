@@ -34,7 +34,7 @@ const MENUS = {
     items: [
       { to: '/storeman/dashboard', label: 'Dashboard', icon: LayoutGrid, end: true },
       { to: '/storeman/merchants', label: 'Merchants', icon: Users },
-      { to: '/storeman/add-credit', label: 'Add Credit Entry', icon: PlusCircle },
+      { to: '/storeman/addhistory', label: 'Add Entry', icon: PlusCircle },
       { to: '/storeman/ledger', label: 'Customer Ledger', icon: BookOpen },
       { to: '/storeman/record-payment', label: 'Record Payment', icon: Wallet },
       { to: '/storeman/payment-verification', label: 'Payment Verification', icon: ShieldCheck },

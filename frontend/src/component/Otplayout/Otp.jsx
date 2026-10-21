@@ -1,20 +1,45 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, ShieldCheck, } from 'lucide-react'
 import './Otp.css'
+import { showSuccessToast } from "../toastMessage/SuccessToast.jsx"
 
 const OTP_LENGTH = 6
 const RESEND_SECONDS = 30
+const BACKEND = import.meta.env.VITE_BACKEND_URL
 
 /**
  * Props
- *  - form          { username, email, phone, password } from the register step
- *  - role          'storeman' | 'merchant'
- *  - onRequestOtp  async () => ({ ok, message })   used for "Resend OTP"
- *  - onVerified    called when the account is created (HTTP 201)
- *  - onEditDetails called when the user wants to go back to the form
- *  - onError       (message) => void, parent shows the error toast
+ *  - form            { username, email, phone, password, address } from the register step
+ *                    (forgot password only needs { email })
+ *  - role            'storeman' | 'merchant'
+ *  - onVerified      called on success. Receives the response data: onVerified(data)
+ *  - onEditDetails   called when the user wants to go back (edit form / change email)
+ *  - onError         (message) => void, parent shows the error
+ *
+ * Optional props (all default to the REGISTRATION behaviour, so register keeps working unchanged)
+ *  - verifyUrl        default '/registerverification'
+ *  - buildVerifyBody  (code) => object     default: the registration body
+ *  - successStatus    default 201          (forgot password verify returns 200)
+ *  - resendUrl        default '/resendOtp'
+ *  - buildResendBody  () => object         default: { email, username }
+ *  - title, subtitle, submitLabel, backLabel   text overrides
  */
-function OtpVerification({ form, role, onRequestOtp, onVerified, onEditDetails, onError }) {
+function OtpVerification({
+    form,
+    role,
+    onVerified,
+    onEditDetails,
+    onError,
+    verifyUrl = '/registerverification',
+    buildVerifyBody,
+    successStatus = 201,
+    resendUrl = '/resendOtp',
+    buildResendBody,
+    title = 'Verify your email',
+    subtitle,
+    submitLabel = 'Verify & continue',
+    backLabel = 'Edit details',
+}) {
     const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''))
     const [otpError, setOtpError] = useState('')
     const [seconds, setSeconds] = useState(RESEND_SECONDS)   // timer starts when this step opens
@@ -56,6 +81,17 @@ function OtpVerification({ form, role, onRequestOtp, onVerified, onEditDetails, 
         inputRefs.current[Math.min(digits.length, OTP_LENGTH - 1)]?.focus()
     }
 
+    // registration body (unchanged) unless the parent passes its own
+    const defaultVerifyBody = (code) => ({
+        username: form.username.trim(),
+        email: form.email.trim().toLowerCase(),
+        phonenumber: form.phone,
+        password: form.password,
+        addresses: form.address,
+        role,
+        otp: String(code).trim(),
+    })
+
     const handleVerify = async (e) => {
         e.preventDefault()
         const code = otp.join('')
@@ -66,24 +102,16 @@ function OtpVerification({ form, role, onRequestOtp, onVerified, onEditDetails, 
 
         setLoading(true)
         try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/registerverification`, {
+            const response = await fetch(`${BACKEND}${verifyUrl}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({
-                    username: form.username.trim(),
-                    email: form.email.trim().toLowerCase(),
-                    phonenumber: form.phone,
-                    password: form.password,
-                    addresses:form.address,
-                    role,
-                    otp: String(code).trim()
-                }),
+                body: JSON.stringify(buildVerifyBody ? buildVerifyBody(code) : defaultVerifyBody(code)),
             })
-            const data = await response.json()
+            const data = await response.json().catch(() => ({}))
 
-            if (response.status === 201) {
-                onVerified()
+            if (response.status === successStatus) {
+                onVerified(data)
                 return
             }
             if (response.status === 409) {               // user already exists
@@ -115,15 +143,30 @@ function OtpVerification({ form, role, onRequestOtp, onVerified, onEditDetails, 
     const handleResendOtp = async () => {
         if (seconds > 0) return
         try {
-            const { ok, message } = await onRequestOtp()
-            if (!ok) {
-                onError(message || 'Could not resend OTP.')
+            const res = await fetch(`${BACKEND}${resendUrl}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify(
+                    buildResendBody
+                        ? buildResendBody()
+                        : { email: form.email, username: form.username }
+                )
+            })
+
+            if (!res.ok) {
+                // was `message || ...` with `message` never defined -> ReferenceError
+                const data = await res.json().catch(() => ({}))
+                onError(data.message || 'Could not resend OTP.')
                 return
             }
             showSuccessToast('A new OTP was sent to your email')
             resetOtp()
             setSeconds(RESEND_SECONDS)
-        } catch {
+        } catch (error) {
+            console.log(error.message)
             onError("Can't reach the server. Please try again.")
         }
     }
@@ -133,8 +176,8 @@ function OtpVerification({ form, role, onRequestOtp, onVerified, onEditDetails, 
             <div className="lp-header">
                 <span className="lp-role-icon"><ShieldCheck size={22} /></span>
                 <div>
-                    <h2>Verify your email</h2>
-                    <p className="login-sub">Enter the code sent to {form.email}</p>
+                    <h2>{title}</h2>
+                    <p className="login-sub">{subtitle || `Enter the code sent to ${form.email}`}</p>
                 </div>
             </div>
 
@@ -159,7 +202,7 @@ function OtpVerification({ form, role, onRequestOtp, onVerified, onEditDetails, 
                 {otpError && <span className="field-error otp-error">{otpError}</span>}
 
                 <button type="submit" className="continue-btn" disabled={loading}>
-                    {loading ? 'Verifying…' : 'Verify & continue'}
+                    {loading ? 'Verifying…' : submitLabel}
                 </button>
             </form>
 
@@ -175,7 +218,7 @@ function OtpVerification({ form, role, onRequestOtp, onVerified, onEditDetails, 
                     )}
                 </p>
                 <button type="button" className="back-btn" onClick={onEditDetails}>
-                    <ArrowLeft size={16} /> Edit details
+                    <ArrowLeft size={16} /> {backLabel}
                 </button>
             </div>
         </>

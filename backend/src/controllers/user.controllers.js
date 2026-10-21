@@ -2,7 +2,7 @@ const asyncHandler = require("../utils/asyncHandler.js")
 const User = require("../models/user.model.js")
 const { sendOtp } = require("../utils/sendotp.js");
 const OtpSchema = require("../models/OtpSchema.js");
-const {Invitation} = require("../models/InvitationSchema.js")
+const { Invitation } = require("../models/InvitationSchema.js")
 
 const generateAccessandRefreshToken = async (userId) => {
     const user = await User.findById(userId);
@@ -66,19 +66,52 @@ const registerUser = asyncHandler(async (req, res, next) => {
         message: "Check your E-Mail"
     })
 })
+const resendOtp = asyncHandler(async (req, res) => {
+    const { email, username } = req.body
 
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const sendotp = await sendOtp(email, username, otp);
+
+    if (sendotp.accepted.length === 0) {
+        return res.status(502).json({
+            message: "Could not send OTP email"
+        });
+    }
+
+    const otpRecord = await OtpSchema.findOne({ email });
+
+    if (!otpRecord) {
+        return res.status(404).json({
+            message: "OTP record not found"
+        });
+    }
+
+    otpRecord.otpHash = otp;
+    otpRecord.expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    await otpRecord.save();
+
+    if (!otpRecord) {
+        return res.status(500).json({
+            message: "Otp not send Retry"
+        })
+    }
+    return res.status(201).json({
+        message: "Check your E-Mail"
+    })
+})
 const registerVerification = asyncHandler(async (req, res, next) => {
     // check the otp verification 
     const { username, email, phonenumber, password, addresses, otp, role } = req.body
+
+    const finalUsername =
+        role === "storeman" ? `${username} Store` : username;
 
     if (!otp) {
         return res.status(400).json({
             message: "Fill up all box"
         })
     }
-
-    const finalUsername =
-        role === "storeman" ? `${username} Store` : username;
 
     //check time 
     const record = await OtpSchema.findOne({ email: email })
@@ -151,16 +184,13 @@ const loginUser = asyncHandler(async (req, res, next) => {
     const finduser = await User.findOne({
         $or: [{ email }, { username }]
     })
-    // console.log(finduser)
     if (!finduser) {
-    // console.log(finduser)
         return res.status(404).json({
             message: "Invalid Username or Email_Id"
         })
     }
 
     if (finduser.role != role) {
-    console.log(finduser)
         return res.status(404).json({
             message: `You're not registered as a ${role[0].toUpperCase()}${role.slice(1)}`
         })
@@ -184,7 +214,6 @@ const loginUser = asyncHandler(async (req, res, next) => {
         secure: process.env.NODE_ENV === "production"
     }
 
-    console.log("Youss login with", loggedUser.username)
     return res.status(200).cookie("accessToken", accessToken, option)
         .cookie("refreshToken", refreshToken, option)
         .json({
@@ -267,6 +296,117 @@ const refreshAccesstoken = asyncHandler(async (req, res, next) => {
     }
 })
 
+const Changepass_validateEmail = asyncHandler(async (req, res) => {
+
+    const { email } = req.body
+
+    if (!email) {
+        return res.status(400).json({
+            message: 'All field require'
+        })
+    }
+
+    const user = await User.findOne(email)
+
+    if (!user) {
+        return res.status(400).json({
+            message: 'User not found in this email'
+        })
+    }
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const sendotp = await sendOtp(email, username, otp);
+
+    if (sendotp.accepted.length === 0) {
+        return res.status(502).json({
+            message: "Could not send OTP email"
+        });
+    }
+
+    const createotp = await OtpSchema.create({
+        email: email,
+        otpHash: otp,
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000)
+    })
+
+    if (!createotp) {
+        return res.status(500).json({
+            message: "Otp not send Retry"
+        })
+    }
+    return res.status(201).json({
+        message: "Check your E-Mail"
+    })
+
+
+})
+
+const VerifyOtp = asyncHandler(async (req, res) => {
+    const { otp, email } = req.body
+
+    if (!otp) {
+        return res.status(400).json({
+            message: "Fill up all box"
+        })
+    }
+
+    //check time 
+    const record = await OtpSchema.findOne({ email: email })
+    if (!record || record.expiresAt < new Date()) {
+        if (record) await OtpSchema.deleteOne({ _id: record._id });
+        return res.status(400).json({
+            message: "OTP expired. Please request a new one."
+        });
+    }
+    //check attempts
+    if (record.attempts <= 1) {
+        await OtpSchema.deleteOne({ _id: record._id });
+        return res.status(429).json({
+            message: "Too many attempt"
+        })
+    }
+
+    //check otp
+    const matchOtp = await record.isOtpMatch(otp)
+
+    if (!matchOtp) {
+        record.attempts -= 1;
+        await record.save()
+        return res.status(405).json({
+            messsage: "Incorrect Otp"
+        })
+    }
+
+    return res.status(200).json({
+        message: "Otp verified"
+    })
+
+})
+
+const ResetPassword = asyncHandler(async (req, res) => {
+    const { email, newpassword } = req.body
+
+    if (!email || !newpassword) {
+        return res.status(400).json({
+            message: "Email and new password are required"
+        });
+    }
+
+    const user = await User.findOne(email)
+
+    if (!user) {
+        return res.status(401).json({
+            message: 'User not found'
+        })
+    }
+
+    user.password = newpassword
+    await user.save({ validateBeforeSave: false })
+
+    return res.status(200).json({
+        message: "Changed your password Successfully"
+    })
+})
+
 const FindStoremanOrMerchant = asyncHandler(async (req, res, next) => {
 
     const { searched } = req.query
@@ -286,31 +426,43 @@ const FindStoremanOrMerchant = asyncHandler(async (req, res, next) => {
         username: regx
     }).sort({ username: 1 }).limit(5).select("-password -refreshToken -email -phonenumber")
 
-    if (!data) {
+    if (data.length === 0) {
         return res.status(400).json({
             meassage: "Not found anything"
         })
     }
 
-
     const result = await Promise.all(
         data.map(async (user) => {
             const invitation = await Invitation.findOne({
                 userId: req.user._id,
-            }).select("status");
+                receive_id: user._id
+            })
+                .sort({ updatedAt: -1 })
+                .select("status");
 
             return {
                 ...user.toObject(),
-                status: invitation?.status ?? 'Decline'
+                status: invitation?.status || ""
             };
         })
     );
 
-    console.log(result)
     return res.status(201).json({
         message: 'This is search based on role',
         info: result
     })
 })
 
-module.exports = { registerUser, registerVerification, loginUser, logoutUser, refreshAccesstoken, FindStoremanOrMerchant }
+module.exports = {
+    registerUser,
+    registerVerification,
+    loginUser,
+    logoutUser,
+    refreshAccesstoken,
+    FindStoremanOrMerchant,
+    resendOtp,
+    ResetPassword,
+    Changepass_validateEmail,
+    VerifyOtp
+}

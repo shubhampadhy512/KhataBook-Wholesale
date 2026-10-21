@@ -5,16 +5,13 @@ import { showSuccessToast } from "../toastMessage/SuccessToast.jsx"
 
 const SEARCH_URL = `${import.meta.env.VITE_BACKEND_URL}/rolebased-suggestion`
 
-// logo shown on the left of each suggestion, picked from the role the backend sends
 const ROLE_LOGO = { merchant: UserCog, storeman: Store }
 
-/* ---------- Invitation status ----------
-   The backend sends one status per person: 'Pending' | 'Approved' | 'Decline'
-   (no status = never invited). Everything the button does comes from this table:
-     icon      -> symbol shown on the button
+/* Backend sends one status per user: 'Pending' | 'Approved' | 'Decline' | null
+   null / missing = no invitation exists.
+     icon      -> symbol on the button
      label     -> tooltip / screen-reader text
-     clickable -> false = disabled button
-   After a decline the plus comes back so the invitation can be sent again. */
+     clickable -> false = disabled button */
 const STATUS_UI = {
     none: { icon: UserPlus, label: 'Send invitation', clickable: true },
     Pending: { icon: Clock, label: 'Invitation pending', clickable: false },
@@ -22,13 +19,20 @@ const STATUS_UI = {
     Decline: { icon: UserPlus, label: 'Declined. Send again', clickable: true },
 }
 
-// turns whatever the backend sent into one of the keys above
+// null / undefined / unknown -> 'none' (never 'Pending')
 const toStatus = (raw) => {
     const s = String(raw || '').toLowerCase()
     if (s === 'pending') return 'Pending'
     if (s === 'approved') return 'Approved'
-    if (s.startsWith('decline')) return 'Decline'     // 'Decline' or 'Declined'
+    if (s.startsWith('decline')) return 'Decline'
     return 'none'
+}
+
+// CSS class for the button, from the status
+const buttonClass = (status, clickable) => {
+    if (!clickable) return ` is-${status.toLowerCase()}`   // is-pending / is-approved
+    if (status === 'Decline') return ' is-decline'          // optional red style
+    return ''                                               // plain +
 }
 
 function RoleLogo({ role }) {
@@ -44,40 +48,52 @@ function SearchBar() {
     const [query, setQuery] = useState('')
     const [focused, setFocused] = useState(false)
     const [searcheds, setsearcheds] = useState([])
+    const [searchDone, setSearchDone] = useState(false)
     const [sending, setSending] = useState(false)
 
-    // statuses of invitations sent from this screen: { [userId]: 'Pending' | ... }
-    // kept separately so they survive a new search replacing the list
+    // status returned right after sending, keyed by that user's _id only
     const [sentStatus, setSentStatus] = useState({})
 
     const text = query.trim()
     const open = focused && text.length >= 2
+    const notFound = open && searchDone && searcheds.length === 0
 
-    // a status we just got from the send call wins over the one from the search
+    // each row: just-sent status for THIS user, else the status the backend gave THIS user
     const statusOf = (searched) => toStatus(sentStatus[searched._id] ?? searched.status)
 
     // call the backend 600ms after the user stops typing
     useEffect(() => {
+        setSearchDone(false)
         if (!open) {
             setsearcheds([])
             return
         }
+        let cancelled = false
         const timer = setTimeout(async () => {
             try {
                 const res = await fetch(`${SEARCH_URL}?searched=${encodeURIComponent(text)}`, {
                     credentials: 'include',
                 })
-                const data = await res.json()
-                setsearcheds(data.info || [])
+                const data = await res.json().catch(() => ({}))
+                if (cancelled) return
+                setsearcheds(res.ok ? data.info || [] : [])
+                setSentStatus({})   // fresh backend statuses are the source of truth
             } catch {
+                if (cancelled) return
                 setsearcheds([])
+            } finally {
+                if (!cancelled) setSearchDone(true)
             }
         }, 600)
-        return () => clearTimeout(timer)
+        return () => {
+            cancelled = true
+            clearTimeout(timer)
+        }
     }, [text, open])
 
-    // + icon clicked: send the invitation
+    // + clicked: send the invitation
     const handleAdd = async (searched) => {
+        if (!searched._id) return
         if (sending || !STATUS_UI[statusOf(searched)].clickable) return
         setSending(true)
 
@@ -90,19 +106,17 @@ function SearchBar() {
             })
 
             const data = await res.json().catch(() => ({}))
-            console.log(data)
             if (!res.ok) {
                 throw new Error(data.message || `Request failed (${res.status})`)
             }
 
-            // backend replies { message, invitation: { status: 'Pending', ... } }
+            // update only the user who was invited
             const status = data.invitation?.status || 'Pending'
             setSentStatus((prev) => ({ ...prev, [searched._id]: status }))
 
             showSuccessToast(data.message, { icon: <CheckCircle2 size={20} color="green" /> })
         } catch (error) {
             console.log('error in send invitation', error.message)
-            // show the error to the user here
         } finally {
             setSending(false)
         }
@@ -133,37 +147,41 @@ function SearchBar() {
                 />
             </div>
 
-            {open && searcheds.length > 0 && (
+            {open && (searcheds.length > 0 || notFound) && (
                 <div className="sb-panel" onMouseDown={(e) => e.preventDefault()}>
-                    <ul className="sb-list">
-                        {searcheds.map((searched) => {
-                            const status = statusOf(searched)
-                            const { icon: StatusIcon, label, clickable } = STATUS_UI[status]
+                    {notFound ? (
+                        <div className="sb-empty">User not found</div>
+                    ) : (
+                        <ul className="sb-list">
+                            {searcheds.map((searched) => {
+                                const status = statusOf(searched)
+                                const { icon: StatusIcon, label, clickable } = STATUS_UI[status]
 
-                            return (
-                                <li key={searched._id} className="sb-option" onClick={() => handleSelect(searched)}>
-                                    <RoleLogo role={searched.role} />
-                                    <div className="sb-option-main">
-                                        <span className="sb-option-title">{searched.username}</span>
-                                        <span className="sb-option-sub">{searched.addresses}</span>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        className={`sb-add${!clickable ? ` is-${status.toLowerCase()}` : ''}`}
-                                        title={label}
-                                        aria-label={`${label}: ${searched.username}`}
-                                        disabled={!clickable || sending}
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            handleAdd(searched)
-                                        }}
-                                    >
-                                        <StatusIcon size={16} />
-                                    </button>
-                                </li>
-                            )
-                        })}
-                    </ul>
+                                return (
+                                    <li key={searched._id} className="sb-option" onClick={() => handleSelect(searched)}>
+                                        <RoleLogo role={searched.role} />
+                                        <div className="sb-option-main">
+                                            <span className="sb-option-title">{searched.username}</span>
+                                            <span className="sb-option-sub">{searched.addresses}</span>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            className={`sb-add${buttonClass(status, clickable)}`}
+                                            title={label}
+                                            aria-label={`${label}: ${searched.username}`}
+                                            disabled={!clickable || sending}
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                handleAdd(searched)
+                                            }}
+                                        >
+                                            <StatusIcon size={16} />
+                                        </button>
+                                    </li>
+                                )
+                            })}
+                        </ul>
+                    )}
                 </div>
             )}
         </div>

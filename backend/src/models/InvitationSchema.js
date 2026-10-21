@@ -14,16 +14,13 @@ const InvitationSchema = new mongoose.Schema({
     status: {
         type: String,
         enum: ['Pending', 'Approved', 'Decline'],
-        default: 'Decline'
+        default: "Pending",
+        required: true
     },
     connection: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Connection',
         default: null
-    },
-    expiresDate: {
-        type: Date,
-        required: true
     }
 }, { timestampes: true }
 )

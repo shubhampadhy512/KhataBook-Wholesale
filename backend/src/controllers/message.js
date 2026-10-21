@@ -8,59 +8,70 @@ const InvitationSend = asyncHandler(async (req, res) => {
     const username = req.user?.username;
     const receive_id = req.body._id;
     const recipientUsername = req.body.username;
-    console.log(req.user, req.body)
 
     if (!user_id || !receive_id || !recipientUsername || !username) {
-        return res.status(400).json({
-            message: "Required fields are missing"
-        });
+        return res.status(400).json({ message: "Invitation cant send" });
     }
 
-    const already = await Invitation.findOne({
-        userId: user_id,
-        receive_id: receive_id
-    });
-
-    if (already) {
-        return res.status(409).json({
-            message: 'You have already sent an invitation to this person'
-        });
-    }
-
+    // cannot invite yourself
     if (user_id.toString() === receive_id.toString()) {
         return res.status(400).json({
-            message: "You cannot send an invitation to yourself"
+            message: "You cannot send invitation to your self",
         });
     }
 
-    const invitation = await Invitation.create({
-        userId: user_id,
-        receive_id,
-        status: 'Pending',
-        expiresDate: new Date(Date.now() + 24 * 60 * 60 * 1000)
-    });
+    // check both directions: me -> them, and them -> me
+    const existing = await Invitation.findOne({
+        $or: [
+            { userId: user_id, receive_id: receive_id },
+            { userId: receive_id, receive_id: user_id },
+        ],
+    }).sort({ updatedAt: -1 });
 
-    // await Notification.create({
-    //     senderId: user_id,
-    //     sendername: username,
-    //     receiverId: receive_id,
-    //     message: `${username} sent you an invitation`,
-    //     type: "Invitation"
-    // });
-    const type = 'Invitation'
-    const message = `${username} sent you an ${type}`
-    const notificaiton = await Notification.sendNotification({
+    let invitation;
+
+    if (!existing) {
+        invitation = await Invitation.create({
+            userId: user_id,
+            receive_id: receive_id,
+            status: 'Pending',
+        });
+    } else if (!existing.status || existing.status === 'Decline') {
+        existing.userId = user_id;
+        existing.receive_id = receive_id;
+        existing.status = 'Pending';
+        invitation = await existing.save();
+    } else {
+        const iSentIt = existing.userId.toString() === user_id.toString();
+        const message =
+            existing.status === 'Approved'
+                ? 'That is already in your list'
+                : iSentIt
+                    ? 'Invitation already sent'
+                    : 'This user has already sent you an invitation';
+        return res.status(409).json({ message, invitation: existing });
+    }
+
+    // send the notification after the invitation is saved
+    const notified = await Notification.sendNotification({
         senderId: user_id,
         sendername: username,
         receiverId: receive_id,
-        message,
-        type
+        message: `${username} sent you an invitation`,
+        type: "Invitation",
+        isRead: false,
     });
 
-    console.log(notificaiton)
+    if (!notified) {
+        return res.status(500).json({
+            message: "Invitation saved, but the notification could not be sent",
+            invitation,
+        });
+    }
+
     return res.status(201).json({
         message: `Invitation sent to ${recipientUsername}`,
-        invitation
+        invitation,
     });
 });
 
@@ -73,7 +84,6 @@ const Listofmessage = asyncHandler(async (req, res) => {
         });
     }
 
-    console.log(req.user)
     const notifications = await Notification.find({
         receiverId: user_id,
         isRead: false
@@ -113,13 +123,13 @@ const UpdateMessage = asyncHandler(async (req, res) => {
             message: 'Invalid notification'
         });
     }
-    console.log(seenmessage.senderId, _id)
     // Update the invitation
+    const newstatus = status === 'Decline' ? "" : status
     const invitation = await Invitation.findOneAndUpdate({
         $and: [
             { userId: seenmessage.senderId }, { receive_id: _id }
         ]
-    }, { $set: { status } },
+    }, { $set: { status: newstatus } },
         { returnDocument: 'after' }
     );
 
@@ -163,7 +173,7 @@ const UpdateMessage = asyncHandler(async (req, res) => {
 const NormalMessageSeen = asyncHandler(async (req, res) => {
     const { _id } = req.user;
 
-    const temp = await Notification.updateMany(
+    await Notification.updateMany(
         {
             receiverId: _id,
             type: 'Normal',
