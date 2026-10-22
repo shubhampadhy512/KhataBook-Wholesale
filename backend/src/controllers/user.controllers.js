@@ -88,7 +88,7 @@ const resendOtp = asyncHandler(async (req, res) => {
 
     otpRecord.otpHash = otp;
     otpRecord.expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-
+    console.log(otp)
     await otpRecord.save();
 
     if (!otpRecord) {
@@ -298,23 +298,30 @@ const refreshAccesstoken = asyncHandler(async (req, res, next) => {
 
 const Changepass_validateEmail = asyncHandler(async (req, res) => {
 
-    const { email } = req.body
+    const { email, role } = req.body
 
-    if (!email) {
+    if (!email || !role) {
         return res.status(400).json({
             message: 'All field require'
         })
     }
 
-    const user = await User.findOne(email)
+    const user = await User.findOne({ email: email })
 
     if (!user) {
         return res.status(400).json({
             message: 'User not found in this email'
         })
     }
+
+    if (role !== user.role) {
+        return res.status(401).json({
+            message:`This Email_Id is not register for this ${role}`
+        })
+    }
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const sendotp = await sendOtp(email, username, otp);
+    const sendotp = await sendOtp(email, user.username, otp);
 
     if (sendotp.accepted.length === 0) {
         return res.status(502).json({
@@ -383,15 +390,16 @@ const VerifyOtp = asyncHandler(async (req, res) => {
 })
 
 const ResetPassword = asyncHandler(async (req, res) => {
-    const { email, newpassword } = req.body
+    const { email, newPassword } = req.body
 
-    if (!email || !newpassword) {
+    if (!email || !newPassword) {
         return res.status(400).json({
             message: "Email and new password are required"
         });
     }
 
-    const user = await User.findOne(email)
+    const user = await User.findOne({ email: email })
+
 
     if (!user) {
         return res.status(401).json({
@@ -399,7 +407,16 @@ const ResetPassword = asyncHandler(async (req, res) => {
         })
     }
 
-    user.password = newpassword
+    const checkoldpassword = await user.isPasswordMatch(newPassword)
+
+    if (checkoldpassword) {
+        return res.status(401).json({
+            message: "New password is same to Old password"
+        })
+    }
+
+
+    user.password = newPassword
     await user.save({ validateBeforeSave: false })
 
     return res.status(200).json({

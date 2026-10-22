@@ -26,9 +26,9 @@ router.route("/refreshacces-token").post(refreshAccesstoken)
 
 router.route("/forgot-password/send-otp").post(Changepass_validateEmail)
 
-router.route("/forgot-password/verfiy-otp").post(VerifyOtp)
+router.route("/forgot-password/verify-otp").post(VerifyOtp)
 
-router.route("/forgot-password/reset").patch(ResetPassword)
+router.route("/forgot-password/reset").post(ResetPassword)
 
 router.route("/resendOtp").post(resendOtp)
 

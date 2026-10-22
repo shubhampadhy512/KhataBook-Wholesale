@@ -28,12 +28,14 @@ const otpSchema = new mongoose.Schema({
 otpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });// MongoDB TTL cleanup
 
 otpSchema.pre("save", async function () {
+
+    console.log(this.otpHash)
     if (!this.isModified("otpHash")) return;
     this.otpHash = await bcrypt.hash(this.otpHash, 10)
 });
 
 otpSchema.methods.isOtpMatch = async function (otp) {
-    return await bcrypt.compare(otp, this.otpHash)
+    return await bcrypt.compare(String(otp), this.otpHash)
 }
 
 module.exports = mongoose.model("Otp", otpSchema);

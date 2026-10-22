@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Mail, ShieldCheck, KeyRound, Eye, EyeOff, ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
+import { BookOpen, Mail, ShieldCheck, KeyRound, Eye, EyeOff, ArrowLeft, ArrowRight, CheckCircle2, EqualApproximatelyNotIcon } from "lucide-react";
 import OtpVerification from "../Otplayout/Otp.jsx";   // must be the updated OTP component (verifyUrl, buildVerifyBody, successStatus props)
 import "./forgotpassword.css";
+import { useLocation } from 'react-router-dom';
+
 
 const API = import.meta.env.VITE_BACKEND_URL;
-const LOGIN_PATH = "/login";          // change to your login route
+const LOGIN_PATH = "/";          // change to your login route
 
 const STEPS = [
     { id: 1, label: "Email", icon: Mail },
@@ -14,6 +16,7 @@ const STEPS = [
 ];
 
 export default function ForgotPassword() {
+    const location = useLocation();
     const navigate = useNavigate();
     const [step, setStep] = useState(1);        // 1 email | 2 otp | 3 reset | 4 done
     const [email, setEmail] = useState("");
@@ -23,11 +26,12 @@ export default function ForgotPassword() {
     const [showPw, setShowPw] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const { role } = location.state || {};
 
     // after success, go to login
     useEffect(() => {
         if (step !== 4) return;
-        const t = setTimeout(() => navigate(LOGIN_PATH), 2500);
+        const t = setTimeout(() => navigate('/'), 2500);
         return () => clearTimeout(t);
     }, [step, navigate]);
 
@@ -49,7 +53,7 @@ export default function ForgotPassword() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ email: value }),
+                body: JSON.stringify({ email: value, role: role }),
             });
             const data = await response.json();
 
@@ -84,7 +88,7 @@ export default function ForgotPassword() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ email, resetToken, newPassword, confirmPassword }),
+                body: JSON.stringify({ email, newPassword, confirmPassword }),
             });
             const data = await response.json();
 
@@ -105,6 +109,7 @@ export default function ForgotPassword() {
     const goBack = () => {
         setError("");
         if (step === 1) navigate(LOGIN_PATH);
+        else if(step===3) setStep(1)
         else setStep(step - 1);
     };
 
