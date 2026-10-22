@@ -2,7 +2,7 @@ const asyncHandler = require("../utils/asyncHandler.js")
 const User = require("../models/user.model.js")
 const { sendOtp } = require("../utils/sendotp.js");
 const OtpSchema = require("../models/OtpSchema.js");
-const { Invitation } = require("../models/InvitationSchema.js")
+const { Invitation, Connection } = require("../models/InvitationSchema.js")
 
 const generateAccessandRefreshToken = async (userId) => {
     const user = await User.findById(userId);
@@ -316,7 +316,7 @@ const Changepass_validateEmail = asyncHandler(async (req, res) => {
 
     if (role !== user.role) {
         return res.status(401).json({
-            message:`This Email_Id is not register for this ${role}`
+            message: `This Email_Id is not register for this ${role}`
         })
     }
 
@@ -471,6 +471,46 @@ const FindStoremanOrMerchant = asyncHandler(async (req, res, next) => {
     })
 })
 
+
+const getMerchantdetails = asyncHandler(async (req, res) => {
+    const { _id } = req.user
+
+    if (!_id) {
+        return res.status(400).json({
+            message: 'User not found'
+        })
+    }
+
+    const merchants = await Connection.find({
+        storemanID: _id
+    })
+    if (!merchants) {
+        return res.status(401).json({
+            message: 'There is not data'
+        })
+    }
+
+    const merchantsdetails = await Promise.all(
+        merchants.map(async (user) => {
+            const invitation = await User.findOne({
+                _id: user.merchantId
+            })
+                .sort({ updatedAt: -1 })
+                .select("username phonenumber");
+
+            return {
+                ...user.toObject(),
+                username: invitation?.username || "",
+                phonenumber: invitation?.phonenumber || ""
+            };
+        })
+    );
+    return res.status(200).json({
+        message: 'This details',
+        body: merchantsdetails
+    })
+})
+
 module.exports = {
     registerUser,
     registerVerification,
@@ -481,5 +521,6 @@ module.exports = {
     resendOtp,
     ResetPassword,
     Changepass_validateEmail,
-    VerifyOtp
+    VerifyOtp,
+    getMerchantdetails
 }

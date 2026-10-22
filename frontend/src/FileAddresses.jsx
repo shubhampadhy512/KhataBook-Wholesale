@@ -13,7 +13,9 @@ import MerchantPayments from "./component/merchant/jsx/MerchantPayment.jsx";
 import MerchantSubmitPayment from "./component/merchant/jsx/MerchantSubmitpayment.jsx";
 import AddHistory from "./component/storeman/addHistory.jsx";
 import ForgotPassword from "./component/login/forgotpassword.jsx";
-
+import MerchantsDetails from "./component/storeman/merchantDetails.jsx";
+import SearchBar from "./component/Dashboard/searchbar.jsx";
+import DailyHistory from "./component/storeman/dailytranscation.jsx"
 
 export {
     Navbar,
@@ -28,6 +30,9 @@ export {
     MerchantPayments,
     MerchantSubmitPayment,
     AddHistory,
-    ForgotPassword
+    ForgotPassword,
+    MerchantsDetails,
+    SearchBar,
+    DailyHistory
 };
 

@@ -32,10 +32,9 @@ const MENUS = {
   storeman: {
     subtitle: 'Storeman console',
     items: [
-      { to: '/storeman/dashboard', label: 'Dashboard', icon: LayoutGrid, end: true },
-      { to: '/storeman/merchants', label: 'Merchants', icon: Users },
+      { to: '/storeman/dashboard', label: 'Dashboard', icon: LayoutGrid, end: true }, 
+      { to: '/storeman/daily-history', label: 'Day History', icon: BookOpen },
       { to: '/storeman/addhistory', label: 'Add Entry', icon: PlusCircle },
-      { to: '/storeman/ledger', label: 'Customer Ledger', icon: BookOpen },
       { to: '/storeman/record-payment', label: 'Record Payment', icon: Wallet },
       { to: '/storeman/payment-verification', label: 'Payment Verification', icon: ShieldCheck },
       { to: '/storeman/chat', label: 'Chat', icon: MessageSquare, badgeKey: 'chat' },

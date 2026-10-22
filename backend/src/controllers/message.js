@@ -100,18 +100,6 @@ const UpdateMessage = asyncHandler(async (req, res) => {
     const { status } = req.body;
     const { _id, username } = req.user;
 
-    // mark that all normal notification is seen
-
-    const temp = await Notification.findOneAndUpdate(
-        {
-            $and: [{ receiverId: _id }, { type: 'Normal' }]
-        }, {
-        $set: {
-            isRead: true
-        }
-    },
-        { returnDocument: 'after' }
-    )
     // Find the notification and verify the recipient
     const seenmessage = await Notification.findOne({
         _id: id,
@@ -148,10 +136,12 @@ const UpdateMessage = asyncHandler(async (req, res) => {
 
     // Create a connection only when approved
     if (status === 'Approved') {
-        await Connection.create({
+        const connection = await Connection.create({
             storemanID: invitation.userId,
             merchantId: invitation.receive_id
         });
+        invitation.connection = connection._id
+        invitation.save()
     }
 
     // Notify the original invitation sender

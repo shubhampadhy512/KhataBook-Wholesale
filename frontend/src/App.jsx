@@ -8,7 +8,9 @@ import {
   MerchantPayments,
   MerchantSubmitPayment,
   AddHistory,
-  ForgotPassword
+  ForgotPassword,
+  MerchantsDetails,
+  DailyHistory
 } from './FileAddresses.jsx';
 import DashboardLayout from './component/Dashboard/Dashboard.jsx'
 
@@ -26,7 +28,9 @@ function App() {
 
         {/* storeman pages */}
         <Route path="/storeman/dashboard" element={<StoremanDashboard />} />
+        <Route path="/storeman/merchants" element={<MerchantsDetails />} />
         <Route path="/storeman/addhistory" element={<AddHistory />} />
+        <Route path="/storeman/daily-history" element={<DailyHistory />} />
       </Route>
     </Routes>
   )

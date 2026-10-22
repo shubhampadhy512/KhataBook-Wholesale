@@ -118,7 +118,6 @@ function NotificationBell() {
             })
             const data = await res.json()
             if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`)
-                console.log(data)
             setItems((data.info || []).map(normalize))
         } catch (err) {
             console.log('error loading notifications', err.message)
@@ -142,7 +141,6 @@ function NotificationBell() {
                 credentials: 'include'
             });
 
-            console.log('Response status:', res.status)
             if (!res.ok) {
                 console.log('Something went wrong in seen message section');
             }

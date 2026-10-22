@@ -9,9 +9,10 @@ const { registerUser,
     resendOtp,
     ResetPassword,
     VerifyOtp,
-    Changepass_validateEmail } = require("../controllers/user.controllers.js")
+    Changepass_validateEmail, getMerchantdetails } = require("../controllers/user.controllers.js")
 
 const { InvitationSend, Listofmessage, UpdateMessage, NormalMessageSeen } = require("../controllers/message.js")
+const { AddTransaction, GetdailyTranscation } = require('../controllers/transaction.js')
 const VerifyUser = require("../middlewar/authVerifiy.js")
 
 router.route("/register").post(registerUser)
@@ -33,6 +34,8 @@ router.route("/forgot-password/reset").post(ResetPassword)
 router.route("/resendOtp").post(resendOtp)
 
 
+router.route("/merchantsdetails").get(VerifyUser, getMerchantdetails)
+
 router.route("/rolebased-suggestion").get(VerifyUser, FindStoremanOrMerchant)
 
 //Notification
@@ -44,5 +47,12 @@ router.route("/notification").get(VerifyUser, Listofmessage)
 router.route("/updatenotification/:id").patch(VerifyUser, UpdateMessage)
 
 router.route("/handleseenmessage").patch(VerifyUser, NormalMessageSeen)
+
+//Transaction
+
+router.route("/addtransactionpurchase").post(VerifyUser, AddTransaction)
+
+router.route("/daily-transcation").get(VerifyUser, GetdailyTranscation)
+
 
 module.exports = router

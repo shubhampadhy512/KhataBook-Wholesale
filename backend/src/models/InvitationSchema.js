@@ -33,6 +33,13 @@ const connectionSchema = new mongoose.Schema({
     merchantId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
+    },
+    totalamount: {
+        type: Number,
+        default: 0
+    }, totalpaid: {
+        type: Number,
+        default: 0
     }
 }, { timestampes: true }
 )

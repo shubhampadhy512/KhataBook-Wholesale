@@ -1,0 +1,341 @@
+/* ==========================================================
+   Customer Ledger : smooth, clean styling
+   ========================================================== */
+
+.cl-page {
+    --bg: #f5f7fa;
+    --surface: #ffffff;
+    --border: #e5e8ee;
+    --border-strong: #d3d8e0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --head-bg: #f1f4f8;
+    --accent: #1f7a5c;
+    --accent-soft: rgba(31, 122, 92, 0.14);
+    --red: #dc2626;
+    --green: #0f9d6b;
+    --ease: 0.2s ease;
+
+    box-sizing: border-box;
+    min-height: 100%;
+    padding: 40px 40px 56px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    animation: cl-fade 0.35s ease both;
+}
+
+.cl-page *,
+.cl-page *::before,
+.cl-page *::after {
+    box-sizing: border-box;
+}
+
+.cl-page button,
+.cl-page input,
+.cl-page select {
+    font: inherit;
+    color: inherit;
+}
+
+@keyframes cl-fade {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* ---------- Heading ---------- */
+.cl-title {
+    margin: 0 0 6px;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+}
+
+.cl-subtitle {
+    margin: 0 0 28px;
+    color: var(--muted);
+}
+
+/* ---------- Card ---------- */
+.cl-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+}
+
+/* ---------- Filters ---------- */
+.cl-filters {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 20px;
+}
+
+.cl-select,
+.cl-search,
+.cl-date {
+    height: 46px;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: border-color var(--ease), box-shadow var(--ease), background-color var(--ease);
+}
+
+.cl-select:hover,
+.cl-search:hover,
+.cl-date:hover {
+    border-color: var(--border-strong);
+}
+
+.cl-select:focus,
+.cl-date:focus,
+.cl-search:focus-within {
+    outline: 0;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+/* merchant dropdown with a custom arrow */
+.cl-select {
+    flex: 1.4;
+    min-width: 0;
+    padding: 0 40px 0 16px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+}
+
+/* search box */
+.cl-search {
+    flex: 1.6;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+    color: var(--muted);
+}
+
+.cl-search input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--text);
+}
+
+.cl-search input::placeholder {
+    color: #94a3b8;
+}
+
+/* date pickers */
+.cl-date {
+    flex: 1;
+    min-width: 0;
+    padding: 0 12px;
+    color-scheme: light;
+    cursor: pointer;
+}
+
+.cl-date::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.55;
+    transition: opacity var(--ease);
+}
+
+.cl-date::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+/* clear button */
+.cl-clear {
+    height: 46px;
+    padding: 0 18px;
+    font-weight: 500;
+    background: none;
+    border: 0;
+    border-radius: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background-color var(--ease), color var(--ease);
+}
+
+.cl-clear:hover {
+    background: var(--head-bg);
+    color: var(--text);
+}
+
+.cl-clear:focus-visible {
+    outline: 0;
+    box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+/* ---------- Table ---------- */
+.cl-table-wrap {
+    overflow-x: auto;
+    border-top: 1px solid var(--border);
+    scroll-behavior: smooth;
+}
+
+.cl-table {
+    width: 100%;
+    min-width: 980px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.cl-table th {
+    padding: 14px 20px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--head-bg);
+    white-space: nowrap;
+}
+
+.cl-table td {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+    transition: background-color var(--ease);
+}
+
+.cl-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.cl-table tbody tr:hover td {
+    background: #f9fafc;
+}
+
+.cl-right {
+    text-align: right !important;
+    font-variant-numeric: tabular-nums;
+}
+
+.cl-muted {
+    color: var(--muted);
+}
+
+.cl-sub {
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.cl-credit {
+    color: var(--red);
+    font-weight: 600;
+}
+
+.cl-payment {
+    color: var(--green);
+    font-weight: 600;
+}
+
+.cl-balance {
+    font-weight: 700;
+}
+
+.cl-empty {
+    padding: 56px 20px !important;
+    text-align: center;
+    color: var(--muted);
+}
+
+/* ---------- Status pills ---------- */
+.cl-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    border-radius: 999px;
+}
+
+.cl-pill i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.cl-pill-pending {
+    background: #fff7e0;
+    border-color: #f6e2a3;
+    color: #a36a00;
+}
+
+.cl-pill-overdue {
+    background: #fdecec;
+    border-color: #f6c7c7;
+    color: #c42222;
+}
+
+/* ---------- Tablet ---------- */
+@media (max-width: 900px) {
+    .cl-page {
+        padding: 28px 16px 40px;
+    }
+
+    .cl-title {
+        font-size: 26px;
+    }
+
+    .cl-filters {
+        flex-wrap: wrap;
+    }
+
+    .cl-select,
+    .cl-search {
+        flex: 1 1 100%;
+    }
+
+    .cl-date {
+        flex: 1 1 calc(50% - 6px);
+    }
+
+    .cl-clear {
+        margin-left: auto;
+    }
+}
+
+/* ---------- Respect reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+    .cl-page {
+        animation: none;
+    }
+
+    .cl-page * {
+        transition: none !important;
+    }
+
+    .cl-table-wrap {
+        scroll-behavior: auto;
+    }
+}
