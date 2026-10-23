@@ -14,6 +14,25 @@ const AddTransaction = asyncHandler(async (req, res) => {
             message: 'All field are required'
         })
     }
+
+    const inr = (amount) => {
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR'
+        }).format(amount);
+    };
+
+    const user = await User.findById(user_id)
+    await Notification.create({
+        senderId: user_id,
+        sendername: user.username,
+        receiverId: merchantId,
+        message: `You Purchase some Product amount of ${inr(amount)} from ${String(user.username.charAt(0).toUpperCase() +
+            user.username.slice(1))}`,
+        type: 'Normal'
+    })
+
+
     const now = new Date();
 
     const transaction = await Transaction.create({
@@ -47,6 +66,7 @@ const AddTransaction = asyncHandler(async (req, res) => {
     }, { returnDocument: 'after' }
     )
 
+
     return res.status(200).json({
         message: 'List is added',
     })
@@ -54,7 +74,40 @@ const AddTransaction = asyncHandler(async (req, res) => {
 
 const GetdailyTranscation = asyncHandler(async (req, res) => {
     const user_id = req.user._id
-    console.log(user_id)
+    const role = req.user.role
+    if (role === 'merchant') {
+        const formerchant = await Transaction.find({
+            merchantId: user_id
+        }).sort({ createdAt: -1 })
+
+        if (formerchant === 0) {
+            return res.status(401).json({
+                message: 'No Transcation there'
+            })
+        }
+
+        const storename = await Promise.all(
+            formerchant.map(async (user) => {
+                const invitation = await User.findOne({
+                    _id: user.storemanId
+                })
+                    .sort({ updatedAt: -1 })
+                    .select("username");
+
+                return {
+                    ...user.toObject(),
+                    username: invitation?.username || "",
+                }
+            })
+        )
+
+        return res.status(200).json({
+            message: 'transcation data',
+            body: storename,
+            role: role
+        })
+
+    }
     const data = await Transaction.find({
         storemanId: user_id
     }).sort({ createdAt: -1 })
@@ -79,11 +132,11 @@ const GetdailyTranscation = asyncHandler(async (req, res) => {
             }
         })
     )
-    console.log(merchantdetails)
+
     return res.status(200).json({
         message: 'transcation data',
         body: merchantdetails,
-
+        role: role
     })
 })
 

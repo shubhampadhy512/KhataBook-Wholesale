@@ -16,6 +16,8 @@ import ForgotPassword from "./component/login/forgotpassword.jsx";
 import MerchantsDetails from "./component/storeman/merchantDetails.jsx";
 import SearchBar from "./component/Dashboard/searchbar.jsx";
 import DailyHistory from "./component/storeman/dailytranscation.jsx"
+import RecordPayment from "./component/storeman/recordPayment.jsx"
+
 
 export {
     Navbar,
@@ -33,6 +35,7 @@ export {
     ForgotPassword,
     MerchantsDetails,
     SearchBar,
-    DailyHistory
+    DailyHistory,
+    RecordPayment
 };
 

@@ -56,8 +56,12 @@ const addBalances = (rows) => {
     return [...rows]
         .sort((a, b) => (a.date > b.date ? 1 : -1))            // oldest first
         .map((r) => {
-            totals[r.merchantKey] = (totals[r.merchantKey] || 0) + (r.type === "credit" ? r.amount : -r.amount);
-            return { ...r, balance: totals[r.merchantKey] };
+            const t = totals[r.merchantKey] || { credit: 0, paid: 0 };
+            if (r.type === "credit") t.credit += r.amount;
+            else t.paid += r.amount;
+            totals[r.merchantKey] = t;
+
+            return { ...r, credit: t.credit, paid: t.paid, balance: t.credit - t.paid };
         });
 };
 
@@ -66,10 +70,12 @@ export default function DailyHistory() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
+    // for storeman this holds a merchant name, for merchant it holds "credit" / "payment"
     const [merchant, setMerchant] = useState("");
     const [search, setSearch] = useState("");
     const [fromDate, setFromDate] = useState("");
     const [toDate, setToDate] = useState("");
+    const [role, setRole] = useState("");
 
     // GET the ledger once, when the page opens
     useEffect(() => {
@@ -85,6 +91,8 @@ export default function DailyHistory() {
                     setError(data.message || "Could not load the ledger.");
                     return;
                 }
+                setRole(data.role);
+                console.log(data)
                 setEntries(addBalances((data.body || []).map(toRow)));
             } catch (err) {
                 console.log("error in get ledger", err.message);
@@ -102,7 +110,10 @@ export default function DailyHistory() {
     // apply the filters, newest first
     const rows = entries
         .filter((e) => {
-            if (merchant && e.merchant !== merchant) return false;
+            if (merchant) {
+                if (role === "storeman" && e.merchant !== merchant) return false;
+                if (role === "merchant" && e.type !== merchant) return false;
+            }
             if (fromDate && e.date < fromDate) return false;
             if (toDate && e.date > toDate) return false;
             return `${e.title} ${e.sub}`.toLowerCase().includes(search.trim().toLowerCase());
@@ -124,19 +135,71 @@ export default function DailyHistory() {
 
     return (
         <div className="cl-page">
-            <h1 className="cl-title">Customer Ledger</h1>
-            <p className="cl-subtitle">
-                Credits, payments and running balances. Only verified payments appear here.
-            </p>
+            {/* Header changes with the role */}
+            {role === "merchant" && (
+                <>
+                    <div className="ledger-header">
+                        <h1>My Ledger</h1>
+                        <p>Your credits, confirmed payments and running balance.</p>
+                    </div>
+
+                    <div className="ledger-card">
+                        <div className="ledger-card-left">
+                            <div className="ledger-avatar">
+                                {(entries.at(-1)?.merchant || "?").slice(0, 2).toUpperCase()}
+                            </div>
+
+                            <div className="ledger-store-info">
+                                <h3>{entries.at(-1)?.merchant || "My Store"}</h3>
+                            </div>
+                        </div>
+
+                        <div className="ledger-card-right">
+                            <div className="ledger-figure">
+                                <span>Credit</span>
+                                <strong>{inr(entries.at(-1)?.credit)}</strong>
+                            </div>
+                            <div className="ledger-figure">
+                                <span>Paid</span>
+                                <strong className="paid">{inr(entries.at(-1)?.paid)}</strong>
+                            </div>
+                            <div className="ledger-figure">
+                                <span>Balance</span>
+                                <strong>{inr(entries.at(-1)?.balance)}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
+
+            {role === "storeman" && (
+                <>
+                    <h1 className="cl-title">Customer Ledger</h1>
+                    <p className="cl-subtitle">
+                        Credits, payments and running balances. Only verified payments appear here.
+                    </p>
+                </>
+            )}
 
             <div className="cl-card">
                 {/* Filters */}
                 <div className="cl-filters">
                     <select className="cl-select" value={merchant} onChange={(e) => setMerchant(e.target.value)}>
-                        <option value="">All merchants</option>
-                        {merchantNames.map((name) => (
-                            <option key={name} value={name}>{name}</option>
-                        ))}
+                        {role === "storeman" && (
+                            <>
+                                <option value="">All merchants</option>
+                                {merchantNames.map((name) => (
+                                    <option key={name} value={name}>{name}</option>
+                                ))}
+                            </>
+                        )}
+                        {role === "merchant" && (
+                            <>
+                                <option value="">All entries</option>
+                                <option value="credit">Credit</option>
+                                <option value="payment">Payment</option>
+                            </>
+                        )}
                     </select>
 
                     <div className="cl-search">
@@ -160,7 +223,7 @@ export default function DailyHistory() {
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Merchant</th>
+                                {role === "storeman" && <th>Merchant</th>}
                                 <th>Description</th>
                                 <th className="cl-right">Credit</th>
                                 <th className="cl-right">Payment</th>
@@ -172,14 +235,14 @@ export default function DailyHistory() {
                         <tbody>
                             {message && (
                                 <tr>
-                                    <td colSpan={8} className="cl-empty">{message}</td>
+                                    <td colSpan={role === "storeman" ? 8 : 7} className="cl-empty">{message}</td>
                                 </tr>
                             )}
 
                             {!message && rows.map((e) => (
                                 <tr key={e.id}>
                                     <td className="cl-muted">{fmtDate(e.date)}</td>
-                                    <td>{e.merchant}</td>
+                                    {role === "storeman" && <td>{e.merchant}</td>}
                                     <td>
                                         <div>{e.title}</div>
                                         {e.sub && <div className="cl-sub">{e.sub}</div>}

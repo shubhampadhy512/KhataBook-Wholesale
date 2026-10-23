@@ -72,6 +72,7 @@ export default function AddHistory() {
     const [items, setItems] = useState([]);
     const [entryDate, setEntryDate] = useState(todayISO());
     const [notes, setNotes] = useState("");
+    const [paid, setPaid] = useState("");
 
     // messages
     const [saving, setSaving] = useState(false);
@@ -181,6 +182,8 @@ export default function AddHistory() {
         if (bad) return setError(`Check "${bad.name || "unnamed"}": name, unit, price and quantity are required.`);
 
         if (!entryDate) return setError("Enter a valid entry date.");
+        if (Number(paid) < 0) return setError("Paid amount can't be negative.");
+        if (Number(paid) > total) return setError("Paid amount can't be more than the total credit amount.");
 
         // data sent to the backend
         const payload = {
@@ -193,6 +196,7 @@ export default function AddHistory() {
             })),
             amount: total,
             notes: notes.trim(),
+            paid: Number(paid) || 0,
         };
 
         setError("");
@@ -215,11 +219,12 @@ export default function AddHistory() {
             // clear only after success
             setItems([]);
             setNotes("");
+            setPaid("");
             setToast(`Credit of ${inr(total)} saved for ${cap(merchant.username)}`);
             setTimeout(() => setToast(""), 3500);
         } catch (err) {
             console.log("error in save credit", err.message);
-            setError("Can't reach the server. Please try again.",err.message);
+            setError("Can't reach the server. Please try again.");
         } finally {
             setSaving(false);
         }
@@ -403,6 +408,19 @@ export default function AddHistory() {
                             <span>Due date (10th of next month)</span>
                             <strong>{fmtDate(dueDate)}</strong>
                         </div>
+
+                        <label>
+                            <span className="ce-label-sm">Amount paid (₹)</span>
+                            <input
+                                type="number"
+                                min="0"
+                                step="any"
+                                inputMode="decimal"
+                                value={paid}
+                                onChange={(e) => setPaid(e.target.value)}
+                                placeholder="0"
+                            />
+                        </label>
 
                         <label>
                             <span className="ce-label-sm">Notes (optional)</span>

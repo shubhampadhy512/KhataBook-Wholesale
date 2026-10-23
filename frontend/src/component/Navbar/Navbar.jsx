@@ -22,7 +22,7 @@ const MENUS = {
     subtitle: 'Merchant portal',
     items: [
       { to: '/merchant/dashboard', label: 'Dashboard', icon: LayoutGrid, end: true },
-      { to: '/merchant/ledger', label: 'History', icon: BookOpen },
+      { to: '/merchant/daily-history', label: 'History', icon: BookOpen },
       { to: '/merchant/payments', label: 'My Payments', icon: CreditCard },
       { to: '/merchant/submit-payment', label: 'Submit Payment', icon: Send },
       { to: '/merchant/chat', label: 'Chat', icon: MessageSquare, badgeKey: 'chat' },
@@ -32,10 +32,10 @@ const MENUS = {
   storeman: {
     subtitle: 'Storeman console',
     items: [
-      { to: '/storeman/dashboard', label: 'Dashboard', icon: LayoutGrid, end: true }, 
-      { to: '/storeman/daily-history', label: 'Day History', icon: BookOpen },
+      { to: '/storeman/dashboard', label: 'Dashboard', icon: LayoutGrid, end: true },
+      { to: '/storeman/daily-history', label: 'History', icon: BookOpen },
       { to: '/storeman/addhistory', label: 'Add Entry', icon: PlusCircle },
-      { to: '/storeman/record-payment', label: 'Record Payment', icon: Wallet },
+      { to: '/storeman/addrecord-payment', label: 'Record Payment', icon: Wallet },
       { to: '/storeman/payment-verification', label: 'Payment Verification', icon: ShieldCheck },
       { to: '/storeman/chat', label: 'Chat', icon: MessageSquare, badgeKey: 'chat' },
       { to: '/storeman/dues', label: 'Outstanding Dues', icon: Clock },
