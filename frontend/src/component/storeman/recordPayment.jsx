@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Info, Wallet, CheckCircle2, Plus, X } from "lucide-react";
 import "./recordPayment.css";
 
@@ -41,15 +41,15 @@ const toMerchant = (m) => ({
     phone: m.phone ?? m.phoneNumber ?? m.mobile ?? "",   // adjust to your merchant field name
 });
 
-// Placeholder list until you load real recent payments from your backend
-const SAMPLE_RECENT = [
-    { id: "r1", phone: "98200 11122", merchant: "Raj Grocery Store", method: "UPI", date: "2026-10-10", amount: 12000 },
-    { id: "r2", phone: "98190 33445", merchant: "Sai Daily Needs", method: "Cash", date: "2026-10-07", amount: 6500 },
-    { id: "r3", phone: "97020 55667", merchant: "Shree Laxmi Mart", method: "UPI", date: "2026-10-05", amount: 4500 },
-    { id: "r4", phone: "99870 77889", merchant: "Krishna General Store", method: "UPI", date: "2026-09-25", amount: 6000 },
-    { id: "r5", phone: "97020 55667", merchant: "Shree Laxmi Mart", method: "Bank Transfer", date: "2026-09-12", amount: 32000 },
-    { id: "r6", phone: "99870 77889", merchant: "Krishna General Store", method: "UPI", date: "2026-08-27", amount: 15000 },
-];
+// Map one payment from your backend to what the table needs (adjust field names if yours differ)
+const toPayment = (p) => ({
+    id: p._id ?? p.id ?? `${p.merchantId}-${p.date}-${p.amount}`,
+    merchant: cap(p.merchantName ?? p.shopName ?? p.merchant?.shopName ?? p.merchant?.username ?? p.username ?? ""),
+    phone: p.phone ?? p.phoneNumber ?? p.mobile ?? p.merchant?.phone ?? "",
+    method: p.method ?? p.paymentMethod ?? "-",
+    date: p.date ?? p.paymentDate ?? p.createdAt ?? "",
+    amount: Number(p.amount ?? 0),
+});
 
 export default function RecordPayment() {
     /* ---------- State ---------- */
@@ -62,7 +62,8 @@ export default function RecordPayment() {
     const [method, setMethod] = useState("Cash");
     const [notes, setNotes] = useState("");
 
-    const [recent, setRecent] = useState(SAMPLE_RECENT);
+    const [recent, setRecent] = useState([]);
+    const [loadingRecent, setLoadingRecent] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
     const [loadError, setLoadError] = useState("");
@@ -101,6 +102,33 @@ export default function RecordPayment() {
         getMerchants();
         return () => { cancelled = true; };
     }, []);
+
+    /* ---------- Load payment history ---------- */
+    const getPayments = useCallback(async () => {
+        try {
+            const response = await fetch(`${BACKEND}/getpayment`, {   // change to your history route
+                method: "GET",
+                credentials: "include",
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+                setLoadError(data.message || "Could not load payment history.");
+                return;
+            }
+            const list = data.body || data.info || data.payments || data.history || [];
+            setRecent(list.map(toPayment));
+        } catch (err) {
+            console.log("error in get payments", err.message);
+            setLoadError("Can't reach the server. Please try again.");
+        } finally {
+            setLoadingRecent(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        getPayments();
+    }, [getPayments]);
 
     /* ---------- Modal behaviour: Esc to close, lock page scroll ---------- */
     const closeModal = () => {
@@ -162,17 +190,16 @@ export default function RecordPayment() {
         if (!date) return setError("Enter a valid payment date.");
 
         const payload = {
-            merchantId,
+            _id:merchantId,
             amount: Number(amount),
-            date,
-            method,
+            type:method,
             notes: notes.trim(),
         };
 
         setError("");
         setSaving(true);
         try {
-            const response = await fetch(`${BACKEND}/recordpayment`, {   // change to your save route
+            const response = await fetch(`${BACKEND}/addpayment`, {   // change to your save route
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
@@ -185,7 +212,7 @@ export default function RecordPayment() {
                 return;
             }
 
-            // add to the recent list, close the modal, clear the form
+            // show the new row right away, close the modal, clear the form
             setRecent((prev) => [
                 {
                     id: data._id || Date.now(),
@@ -199,6 +226,7 @@ export default function RecordPayment() {
             ]);
             resetForm();
             setOpen(false);
+            getPayments();   // refresh the history from the server
 
             setToast(`Payment of ${inr(payload.amount)} recorded`);
             setTimeout(() => setToast(""), 3500);
@@ -231,10 +259,14 @@ export default function RecordPayment() {
             <section className="rp-recent-card">
                 <div className="rp-recent-head">
                     <h2 className="rp-section-title">Recent confirmed payments</h2>
-                    <span className="rp-count">{recent.length} payments</span>
+                    {!loadingRecent && <span className="rp-count">{recent.length} payments</span>}
                 </div>
 
-                {recent.length === 0 ? (
+                {loadingRecent ? (
+                    <div className="rp-empty" role="status">
+                        <p>Loading payments…</p>
+                    </div>
+                ) : recent.length === 0 ? (
                     <div className="rp-empty">
                         <p>No payments recorded yet.</p>
                         <button type="button" className="rp-add" onClick={openModal}>

@@ -13,6 +13,7 @@ const { registerUser,
 
 const { InvitationSend, Listofmessage, UpdateMessage, NormalMessageSeen } = require("../controllers/message.js")
 const { AddTransaction, GetdailyTranscation } = require('../controllers/transaction.js')
+const { AddPayment, GetPaymentHistory } = require("../controllers/payment.js")
 const VerifyUser = require("../middlewar/authVerifiy.js")
 
 router.route("/register").post(registerUser)
@@ -53,6 +54,15 @@ router.route("/handleseenmessage").patch(VerifyUser, NormalMessageSeen)
 router.route("/addtransactionpurchase").post(VerifyUser, AddTransaction)
 
 router.route("/daily-transcation").get(VerifyUser, GetdailyTranscation)
+
+
+//Payment
+
+router.route("/getpayment").get(VerifyUser, GetPaymentHistory)
+
+router.route("/addpayment").post(VerifyUser, AddPayment)
+
+
 
 
 module.exports = router

@@ -3,12 +3,15 @@ const Transaction = require("../models/transcationSchema.js")
 const { Invitation, Connection } = require("../models/InvitationSchema.js");
 const Notification = require("../models/notification.js");
 const User = require("../models/user.model.js")
+const mongoose = require("mongoose")
 
 
 const AddTransaction = asyncHandler(async (req, res) => {
     const { merchantId, items, amount, notes } = req.body
     const user_id = req.user._id
 
+    console.log("Storeman ID:", user_id);
+    console.log("Merchant ID:", merchantId);
     if (!merchantId || !user_id || !items || !amount || !notes) {
         return res.status(401).json({
             message: 'All field are required'
@@ -35,6 +38,23 @@ const AddTransaction = asyncHandler(async (req, res) => {
 
     const now = new Date();
 
+
+    const connection = await Connection.findOne({
+        storemanId: user_id,
+        merchantId: merchantId
+    });
+
+    console.log(connection, merchantId, user_id)
+
+    if (!connection) {
+        return res.status(404).json({
+            message: 'Something went wrong'
+        })
+    }
+    connection.totalamount += Number(amount);
+    await connection.save();
+
+
     const transaction = await Transaction.create({
         storemanId: user_id,
         merchantId,
@@ -54,17 +74,6 @@ const AddTransaction = asyncHandler(async (req, res) => {
             message: 'Something went wrong'
         })
     }
-
-    await Connection.findOneAndUpdate(
-        {
-            storemanId: user_id,
-            merchantId: merchantId
-        }, {
-        $inc: {
-            totalamount: amount
-        }
-    }, { returnDocument: 'after' }
-    )
 
 
     return res.status(200).json({
