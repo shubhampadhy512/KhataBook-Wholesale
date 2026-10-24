@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
     ArrowLeft, ArrowRight, Eye, EyeOff, UserPlus, CheckCircle2,
     UserCog, Store, ShieldAlert,
@@ -85,6 +85,24 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
     const [showPassword, setShowPassword] = useState(false)
     const [errors, setErrors] = useState({})
     const [loading, setLoading] = useState(false)
+    const formRef = useRef(null)
+
+    // Press Enter anywhere on the register form step = click "Register & Send OTP"
+    useEffect(() => {
+        if (step !== 'form') return                  // only on the form step (OTP has its own screen)
+
+        const handleEnter = (e) => {
+            if (e.key !== 'Enter' || e.repeat) return
+            if (loading) return
+            if (e.target.closest('form')) return     // the form already handles Enter itself
+            if (e.target.closest('button')) return   // other buttons keep their own action
+            e.preventDefault()
+            formRef.current?.requestSubmit()
+        }
+
+        window.addEventListener('keydown', handleEnter)
+        return () => window.removeEventListener('keydown', handleEnter)
+    }, [step, loading])
 
     const setField = (name) => (e) => {
         let value = e.target.value
@@ -193,7 +211,7 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
                             </header>
 
                             {/* 12-column grid: fields get different widths (see registerpage.css) */}
-                            <form className="reg-form" onSubmit={handleRegister} noValidate>
+                            <form ref={formRef} className="reg-form" onSubmit={handleRegister} noValidate>
                                 <h3 className="reg-section">Account details</h3>
 
                                 {textField({

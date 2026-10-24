@@ -8,6 +8,18 @@ const Payment = require("../models/paymentSchema.js")
 
 const GetPaymentHistory = asyncHandler(async (req, res) => {
     const user_id = req.user._id
+    const role = req.user.role
+
+    if (role === 'merchant') {
+        const data = await Payment.find({
+            merchantId: user_id
+        }).sort({ createdAt: -1 })
+
+        return res.status(200).json({
+            message: 'Add the payment',
+            body: data
+        })
+    }
 
     const data = await Payment.find({
         storemanId: user_id
@@ -82,8 +94,8 @@ const AddPayment = asyncHandler(async (req, res) => {
         merchantId: merchantId,
         type: "Payment",
         amount: amount,
-        paymentMode:type,        
-        description:notes,
+        paymentMode: type,
+        description: notes,
     })
     const payment = await Payment.create({
         storemanId: user_id,

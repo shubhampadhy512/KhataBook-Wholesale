@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { BookOpen, UserCog, Store, ArrowRight, ShieldCheck } from 'lucide-react'
 import './login.css'
 import Logo from '/logo.png'
@@ -9,21 +9,21 @@ const roles = [
     {
         id: 'storeman',
         title: 'Storeman',
-        desc: 'Anil Mehta · records credit and verifies payments',
+        desc: 'Record credit, verify payments and manage every merchant',
         Icon: UserCog,
     },
     {
         id: 'merchant',
         title: 'Merchant',
-        desc: 'Views ledger, submits payments for verification',
+        desc: 'View your ledger and submit payments for verification',
         Icon: Store,
     },
 ]
 
 const stats = [
-    { value: '5', label: 'Merchants' },
-    { value: '₹2.1L', label: 'Credit tracked' },
-    { value: '2-step', label: 'Verification' },
+    { value: 'Real-time', label: 'Ledger updates' },
+    { value: 'One tap', label: 'Payment verification' },
+    { value: '24/7', label: 'Access anywhere' },
 ]
 
 function Login() {
@@ -31,6 +31,23 @@ function Login() {
     const [loginpage, setLoginpage] = useState(false);
     const [registering, setRegistering] = useState(false)
     const activeRole = roles.find((r) => r.id === selected)
+
+    // Press Enter on the role screen = click "Continue"
+    // Press Enter on the role screen = click "Continue"
+    useEffect(() => {
+        if (loginpage) return   // only on the role selection screen
+
+        const handleEnter = (e) => {
+            if (e.key !== 'Enter') return
+            if (e.repeat) return                                   // ignore holding the key down
+            if (e.target.closest('.continue-btn')) return          // Continue button already handles Enter itself
+            e.preventDefault()                                     // stops the focused role card from re-clicking
+            setLoginpage(true)
+        }
+
+        window.addEventListener('keydown', handleEnter)
+        return () => window.removeEventListener('keydown', handleEnter)
+    }, [loginpage])
 
     return (
         <div className="login-container">
@@ -100,7 +117,7 @@ function Login() {
                         <div className="login-note">
                             <span>
                                 <ShieldCheck size={16} />
-                                Data is saved only in this browser.
+                                Secure, simple and always in sync.
                             </span>
                         </div>
                     </div>

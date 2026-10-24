@@ -1,125 +1,184 @@
-import { useMemo } from "react";
-import "../cssfile/MerchantPayments.css"
+import React, { useEffect, useState } from "react";
+import { Search } from "lucide-react";
+import "../cssfile/MerchantPayments.css" // all styles for this page are in this one file
 
-const PAYMENTS = [
-    {
-        id: "PR-1007",
-        amount: 8000,
-        method: "UPI",
-        reference: "adsfasdf",
-        submittedAt: "2026-10-17T01:34:00",
-        status: "pending",
-    },
-    {
-        id: "PR-1006",
-        amount: 8000,
-        method: "UPI",
-        reference: "asdfasdf",
-        submittedAt: "2026-10-16T22:17:00",
-        status: "pending",
-    },
-    {
-        id: "PR-1001",
-        amount: 12000,
-        method: "UPI",
-        reference: "UPI123456",
-        submittedAt: "2026-10-10T00:44:00",
-        status: "verified",
-        verifiedAt: "2026-10-10T10:00:00",
-    },
-];
+const BACKEND = import.meta.env.VITE_BACKEND_URL;
+const ENDPOINT = "/getpayment"; // change to your route (GET, returns { message, body: [...] })
 
-const STATUS = {
-    pending: { label: "Pending Verification", className: "is-pending" },
-    verified: { label: "Verified — Successful", className: "is-verified" },
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"];
+
+// Any date value from the backend -> "2026-11-10" in the user's local time
+const toLocalISO = (value) => {
+    if (!value) return "";
+    const d = new Date(value);
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${d.getFullYear()}-${mm}-${dd}`;
 };
 
-const inr = (n) => "₹" + n.toLocaleString("en-IN");
+// "2026-11-10" -> "10 Nov 2026"
+const fmtDate = (iso) => {
+    if (!iso) return "—";
+    const [y, m, d] = iso.split("-");
+    return `${d} ${MONTHS[Number(m) - 1]} ${y}`;
+};
 
-const formatDay = (d) =>
-    d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+const cap = (text) => (text ? text.charAt(0).toUpperCase() + text.slice(1) : "-");
 
-const formatTime = (d) =>
-    d
-        .toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true })
-        .toLowerCase();
+const inr = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
 
-const formatFullDate = (d) =>
-    d
-        .toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
-        .replace("Sep ", "Sept ");
+// Backend status -> colour group: "good" (green), "wait" (amber), "bad" (red)
+const groupOf = (status) => {
+    const s = String(status || "").toLowerCase();
+    if (["verified", "approved", "confirmed", "done", "paid", "success"].includes(s)) return "good";
+    if (["rejected", "failed", "declined", "cancelled"].includes(s)) return "bad";
+    return "wait"; // pending or anything else
+};
 
-export default function MerchantPayments({ payments = PAYMENTS }) {
-    // Newest submission first
-    const submitted = useMemo(
-        () => [...payments].sort((a, b) => b.submittedAt.localeCompare(a.submittedAt)),
-        [payments]
-    );
+// One backend payment -> one table row
+const toRow = (p) => ({
+    id: p._id,
+    date: toLocalISO(p.createdAt),
+    title: p.paymentMode ? `Payment · ${p.paymentMode}` : "Payment",
+    sub: `Paid ${inr(p.amount)}${p.description ? " · " + p.description : ""}`,
+    amount: Number(p.amount) || 0,
+    statusText: p.status ? cap(p.status) : "Pending",
+    group: groupOf(p.status),
+});
 
-    const confirmed = useMemo(
-        () =>
-            payments
-                .filter((p) => p.status === "verified")
-                .sort((a, b) => (b.verifiedAt || "").localeCompare(a.verifiedAt || "")),
-        [payments]
-    );
+export default function MerchantPayments() {
+    const [payments, setPayments] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    const [filter, setFilter] = useState(""); // "" | good | wait | bad
+    const [search, setSearch] = useState("");
+    const [fromDate, setFromDate] = useState("");
+    const [toDate, setToDate] = useState("");
+
+    // GET this merchant's payments once, when the page opens
+    useEffect(() => {
+        const getPayments = async () => {
+            try {
+                const response = await fetch(BACKEND + ENDPOINT, {
+                    method: "GET",
+                    credentials: "include",
+                });
+                const data = await response.json();
+
+                if (!response.ok) {
+                    setError(data.message || "Could not load your payments.");
+                    return;
+                }
+
+                // keep only real payments (a "no payment" placeholder has no _id)
+                const real = (data.body || []).filter((p) => p._id);
+
+                // newest first
+                real.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                setPayments(real.map(toRow));
+            } catch (err) {
+                console.log("error in get payments:", err.message);
+                setError("Can't reach the server. Please try again.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        getPayments();
+    }, []);
+
+    // Apply the filters
+    const q = search.trim().toLowerCase();
+    const rows = payments.filter((p) => {
+        if (filter && p.group !== filter) return false;
+        if (fromDate && p.date < fromDate) return false;
+        if (toDate && p.date > toDate) return false;
+        return `${p.title} ${p.sub}`.toLowerCase().includes(q);
+    });
+
+    const clearFilters = () => {
+        setFilter("");
+        setSearch("");
+        setFromDate("");
+        setToDate("");
+    };
+
+    // Message shown inside the table when there are no rows
+    let message = "";
+    if (loading) message = "Loading payments…";
+    else if (error) message = error;
+    else if (rows.length === 0) message = payments.length === 0 ? "No payments yet." : "No entries found.";
 
     return (
-        <main className="payments">
-            <div className="payments__wrap">
-                <h1 className="payments__title">My Payments</h1>
-
-                <section className="payments__card">
-                    <h2 className="payments__heading">Submitted for verification</h2>
-                    {submitted.length === 0 ? (
-                        <p className="payments__empty">No payments submitted yet.</p>
-                    ) : (
-                        <ul className="payments__list">
-                            {submitted.map((p) => {
-                                const when = new Date(p.submittedAt);
-                                const s = STATUS[p.status];
-                                return (
-                                    <li key={p.id} className="payments__row">
-                                        <div>
-                                            <div className="payments__line">
-                                                <b className="payments__amount">{inr(p.amount)}</b>
-                                                <span className="payments__ref">
-                                                    {p.id} · {p.method} · {p.reference}
-                                                </span>
-                                            </div>
-                                            <div className="payments__sub">
-                                                Submitted {formatDay(when)}, {formatTime(when)}
-                                            </div>
-                                        </div>
-                                        <span className={`payments__pill ${s.className}`}>{s.label}</span>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    )}
-                </section>
-
-                <section className="payments__card">
-                    <h2 className="payments__heading">Confirmed payment history</h2>
-                    {confirmed.length === 0 ? (
-                        <p className="payments__empty">Verified payments will show up here.</p>
-                    ) : (
-                        <ul className="payments__list">
-                            {confirmed.map((p) => (
-                                <li key={p.id} className="payments__row">
-                                    <div>
-                                        <div className="payments__desc">Payment verified ({p.id})</div>
-                                        <div className="payments__sub">
-                                            {p.method} · {p.reference} · {formatFullDate(new Date(p.verifiedAt))}
-                                        </div>
-                                    </div>
-                                    <b className="payments__paid">{inr(p.amount)}</b>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </section>
+        <div className="mp-page">
+            <div className="mp-header">
+                <h1>My Payments</h1>
+                <p>Every payment you made and whether it is verified.</p>
             </div>
-        </main>
+
+            <div className="mp-card">
+                {/* Filters */}
+                <div className="mp-filters">
+                    <select className="mp-select" value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Filter by status">
+                        <option value="">All entries</option>
+                        <option value="good">Verified</option>
+                        <option value="wait">Pending</option>
+                        <option value="bad">Rejected</option>
+                    </select>
+
+                    <div className="mp-search">
+                        <Search size={16} />
+                        <input
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Search description or reference"
+                        />
+                    </div>
+
+                    <input type="date" className="mp-date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} aria-label="From date" />
+                    <input type="date" className="mp-date" value={toDate} onChange={(e) => setToDate(e.target.value)} aria-label="To date" />
+
+                    <button type="button" className="mp-clear" onClick={clearFilters}>Clear</button>
+                </div>
+
+                {/* Table */}
+                <div className="mp-table-wrap">
+                    <table className="mp-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th className="mp-right mp-gap">Payment</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {message && (
+                                <tr>
+                                    <td colSpan={4} className="mp-empty">{message}</td>
+                                </tr>
+                            )}
+
+                            {!message && rows.map((p) => (
+                                <tr key={p.id}>
+                                    <td className="mp-muted">{fmtDate(p.date)}</td>
+                                    <td>
+                                        <div>{p.title}</div>
+                                        {p.sub && <div className="mp-sub">{p.sub}</div>}
+                                    </td>
+                                    <td className="mp-right mp-payment mp-gap">{inr(p.amount)}</td>
+                                    <td>
+                                        <span className={`mp-pill mp-pill-${p.group}`}>
+                                            <i /> {p.statusText}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     );
 }

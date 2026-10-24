@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { ArrowLeft, Eye, EyeOff, LogIn, UserPlus, UserCog, Store, ShieldAlert, CheckCircle } from 'lucide-react'
 import { useNavigate } from "react-router-dom"
 import { toast } from 'react-toastify';
@@ -37,7 +37,22 @@ function LoginPage({ role = 'storeman', onBack, onRegister }) {
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const formRef = useRef(null)
 
+    // Press Enter anywhere on this page = click "Sign in"
+    useEffect(() => {
+        const handleEnter = (e) => {
+            if (e.key !== 'Enter' || e.repeat) return
+            if (loading) return
+            if (e.target.closest('form')) return     // the form already handles Enter itself
+            if (e.target.closest('button')) return   // other buttons keep their own action
+            e.preventDefault()
+            formRef.current?.requestSubmit()
+        }
+
+        window.addEventListener('keydown', handleEnter)
+        return () => window.removeEventListener('keydown', handleEnter)
+    }, [loading])
 
     const validate = () => {
         const next = {}
@@ -130,7 +145,7 @@ function LoginPage({ role = 'storeman', onBack, onRegister }) {
 
                     <div className="divider"><span>or</span></div>
 
-                    <form className="lp-form" onSubmit={handleSubmit} noValidate>
+                    <form ref={formRef} className="lp-form" onSubmit={handleSubmit} noValidate>
                         <div className={`field ${errors.email ? 'has-error' : ''}`}>
                             <label htmlFor="email">Email</label>
                             <input
