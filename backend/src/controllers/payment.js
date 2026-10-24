@@ -7,15 +7,27 @@ const Payment = require("../models/paymentSchema.js")
 
 
 const GetPaymentHistory = asyncHandler(async (req, res) => {
-    const user_id = req.user_id
+    const user_id = req.user._id
 
     const data = await Payment.find({
         storemanId: user_id
     }).sort({ createdAt: -1 })
 
+
+    const alldata = await Promise.all(
+        data.map(async (data) => {
+            const user = await User.findOne(data.merchantId).sort({ updatedAt: -1 }).select("username phonenumber")
+
+            return {
+                ...data.toObject(),
+                username: user?.username || '',
+                phonenumber: user?.phonenumber || ''
+            }
+        })
+    )
     return res.status(200).json({
         message: 'Add the payment',
-        body: data
+        body: alldata
     })
 
 })
@@ -35,28 +47,44 @@ const AddPayment = asyncHandler(async (req, res) => {
 
     const balance = await Connection.findOne({ merchantId: merchantId })
 
-    console.log(merchantId, amount, type, notes,balance)
     if (!balance) {
         return res.status(401).json({
             message: 'Invalid Merchant'
         })
     }
-    if (amount > balance.totalamount) {
+    if (amount > balance.totalamount - balance.totalpaid) {
         return res.status(400).json({
             message: "You can't pay more than Balance"
         })
     }
 
+    balance.totalpaid += amount;
+    balance.save()
+    const inr = (amount) => {
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR'
+        }).format(amount);
+    };
 
     await Notification.create({
         senderId: user_id,
         sendername: username,
         receiverId: merchantId,
-        message: `You Purchase some Product amount of ${inr(amount)} from ${String(username.charAt(0).toUpperCase() +
+        message: `You paid ${inr(amount)} to ${String(username.charAt(0).toUpperCase() +
             username.slice(1))}`,
         type: 'Normal'
     })
 
+
+    await Transaction.create({
+        storemanId: user_id,
+        merchantId: merchantId,
+        type: "Payment",
+        amount: amount,
+        paymentMode:type,        
+        description:notes,
+    })
     const payment = await Payment.create({
         storemanId: user_id,
         merchantId: merchantId,

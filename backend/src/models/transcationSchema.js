@@ -49,7 +49,14 @@ const TransactionSchema = new mongoose.Schema({
     },
     duedate: {
         type: Date,
-        required: true
+        required: function () {
+            return this.type === "Purchase";   // payments don't need a due date
+        }
+    },
+    paymentMode: {
+        type: String,
+        enum: ["Cash", "UPI", "Bank Transfer"],
+        default: "Cash"
     },
     description: {
         type: String,

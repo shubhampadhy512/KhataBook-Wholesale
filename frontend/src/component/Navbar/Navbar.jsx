@@ -37,7 +37,7 @@ const MENUS = {
       { to: '/storeman/addhistory', label: 'Add Entry', icon: PlusCircle },
       { to: '/storeman/addrecord-payment', label: 'Record Payment', icon: Wallet },
       { to: '/storeman/payment-verification', label: 'Payment Verification', icon: ShieldCheck },
-      { to: '/storeman/chat', label: 'Chat', icon: MessageSquare, badgeKey: 'chat' },
+      { to: '/storeman/merchantbalances', label: 'Balances', icon: MessageSquare, badgeKey: 'balances' },
       { to: '/storeman/dues', label: 'Outstanding Dues', icon: Clock },
       { to: '/storeman/reports', label: 'Reports', icon: BarChart3 },
     ],

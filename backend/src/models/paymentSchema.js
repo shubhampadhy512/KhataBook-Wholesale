@@ -12,8 +12,9 @@ const PaymentSchema = new mongoose.Schema({
     },
     paymentType: {
         type: String,
-        enum: ['Online', 'Cash'],
-        required: true
+        enum: ['UPI', 'Cash', 'Bank Transfer'],
+        required: true,
+        default:'Cash'
     },
     status: {
         type: String,
@@ -27,6 +28,9 @@ const PaymentSchema = new mongoose.Schema({
     },
     notes: {
         type: String,
+    },
+    transactionId:{
+        type:mongoose.Schema.Types.ObjectId
     }
 }, { timestamps: true }
 )

@@ -38,15 +38,15 @@ const toMerchant = (m) => ({
     _id: m._id,
     merchantId: m.merchantId,
     username: m.shopName ?? m.username ?? "",
-    phone: m.phone ?? m.phoneNumber ?? m.mobile ?? "",   // adjust to your merchant field name
+    phone:  m.phonenumber ??  "",   // adjust to your merchant field name
 });
 
 // Map one payment from your backend to what the table needs (adjust field names if yours differ)
 const toPayment = (p) => ({
     id: p._id ?? p.id ?? `${p.merchantId}-${p.date}-${p.amount}`,
-    merchant: cap(p.merchantName ?? p.shopName ?? p.merchant?.shopName ?? p.merchant?.username ?? p.username ?? ""),
-    phone: p.phone ?? p.phoneNumber ?? p.mobile ?? p.merchant?.phone ?? "",
-    method: p.method ?? p.paymentMethod ?? "-",
+    merchant: cap( p.username ?? ""),
+    phone:  p.phonenumber ??  "",
+    method:p.paymentType ?? "-",
     date: p.date ?? p.paymentDate ?? p.createdAt ?? "",
     amount: Number(p.amount ?? 0),
 });
@@ -112,6 +112,7 @@ export default function RecordPayment() {
             });
             const data = await response.json();
 
+            console.log(data)
             if (!response.ok) {
                 setLoadError(data.message || "Could not load payment history.");
                 return;

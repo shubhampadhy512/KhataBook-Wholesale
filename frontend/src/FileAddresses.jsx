@@ -17,6 +17,7 @@ import MerchantsDetails from "./component/storeman/merchantDetails.jsx";
 import SearchBar from "./component/Dashboard/searchbar.jsx";
 import DailyHistory from "./component/storeman/dailytranscation.jsx"
 import RecordPayment from "./component/storeman/recordPayment.jsx"
+import MerchantBalances from "./component/storeman/merchantbalances.jsx"
 
 
 export {
@@ -36,6 +37,7 @@ export {
     MerchantsDetails,
     SearchBar,
     DailyHistory,
-    RecordPayment
+    RecordPayment,
+    MerchantBalances
 };
 

@@ -11,7 +11,8 @@ import {
   ForgotPassword,
   MerchantsDetails,
   DailyHistory,
-  RecordPayment
+  RecordPayment,
+  MerchantBalances
 } from './FileAddresses.jsx';
 import DashboardLayout from './component/Dashboard/Dashboard.jsx'
 
@@ -35,6 +36,7 @@ function App() {
         <Route path="/storeman/addhistory" element={<AddHistory />} />
         <Route path="/storeman/daily-history" element={<DailyHistory />} />
         <Route path="/storeman/addrecord-payment" element={<RecordPayment />} />
+        <Route path="/storeman/merchantbalances" element={<MerchantBalances />} />
       </Route>
     </Routes>
   )

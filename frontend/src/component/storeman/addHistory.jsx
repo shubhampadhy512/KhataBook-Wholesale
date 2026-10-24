@@ -196,7 +196,7 @@ export default function AddHistory() {
             })),
             amount: total,
             notes: notes.trim(),
-            paid: Number(paid) || 0,
+            paidamount: Number(paid) || 0,
         };
 
         setError("");

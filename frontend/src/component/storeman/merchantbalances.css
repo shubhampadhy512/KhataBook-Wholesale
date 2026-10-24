@@ -1,0 +1,326 @@
+/* Merchant balances: self-contained, no other stylesheet needed */
+.mb {
+    --mb-surface: #ffffff;
+    --mb-border: #e5e8ee;
+    --mb-border-strong: #d3d8e0;
+    --mb-text: #0f172a;
+    --mb-muted: #64748b;
+    --mb-head: #f1f4f8;
+    --mb-accent: #1f7a5c;
+    --mb-accent-soft: rgba(31, 122, 92, 0.14);
+    --mb-red: #dc2626;
+    --mb-green: #0f9d6b;
+
+    box-sizing: border-box;
+    margin-bottom: 24px;
+    background: var(--mb-surface);
+    color: var(--mb-text);
+    border: 1px solid var(--mb-border);
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.mb *,
+.mb *::before,
+.mb *::after {
+    box-sizing: border-box;
+}
+
+.mb input,
+.mb select {
+    font: inherit;
+    color: inherit;
+}
+
+/* ---------- Header ---------- */
+.mb-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 20px 24px;
+}
+
+.mb-head h2 {
+    margin: 0 0 2px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.mb-head p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--mb-muted);
+}
+
+.mb-figures {
+    display: flex;
+    gap: 32px;
+}
+
+.mb-figures span {
+    display: block;
+    font-size: 13px;
+    color: var(--mb-muted);
+}
+
+.mb-figures strong {
+    font-size: 20px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.mb-figures strong.due {
+    color: var(--mb-red);
+}
+
+/* refresh button */
+.mb-refresh {
+    align-self: center;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--mb-surface);
+    color: var(--mb-muted);
+    border: 1px solid var(--mb-border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mb-refresh:hover:not(:disabled) {
+    border-color: var(--mb-border-strong);
+    color: var(--mb-text);
+}
+
+.mb-refresh:focus-visible {
+    outline: 0;
+    border-color: var(--mb-accent);
+    box-shadow: 0 0 0 4px var(--mb-accent-soft);
+}
+
+.mb-refresh:disabled {
+    cursor: default;
+    opacity: 0.7;
+}
+
+.mb .spin {
+    animation: mb-spin 0.9s linear infinite;
+}
+
+@keyframes mb-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ---------- Search + sort ---------- */
+.mb-tools {
+    display: flex;
+    gap: 12px;
+    padding: 0 24px 16px;
+}
+
+.mb-search,
+.mb-sort {
+    height: 44px;
+    background-color: var(--mb-surface);
+    border: 1px solid var(--mb-border);
+    border-radius: 12px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mb-search:hover,
+.mb-sort:hover {
+    border-color: var(--mb-border-strong);
+}
+
+.mb-search:focus-within,
+.mb-sort:focus {
+    outline: 0;
+    border-color: var(--mb-accent);
+    box-shadow: 0 0 0 4px var(--mb-accent-soft);
+}
+
+.mb-search {
+    flex: 2;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    color: var(--mb-muted);
+}
+
+.mb-search input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--mb-text);
+}
+
+.mb-search input::placeholder {
+    color: #94a3b8;
+}
+
+.mb-sort {
+    flex: 1;
+    min-width: 0;
+    padding: 0 38px 0 14px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+/* ---------- Table (scrolls when there are many merchants) ---------- */
+.mb-scroll {
+    max-height: 340px;
+    overflow: auto;
+    border-top: 1px solid var(--mb-border);
+}
+
+.mb-table {
+    width: 100%;
+    min-width: 420px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.mb-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 12px 24px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--mb-muted);
+    background: var(--mb-head);
+    white-space: nowrap;
+}
+
+.mb-table td {
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--mb-border);
+    vertical-align: middle;
+}
+
+.mb-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.mb-right {
+    text-align: right !important;
+    font-variant-numeric: tabular-nums;
+}
+
+.mb-muted {
+    color: var(--mb-muted);
+}
+
+.mb-who {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mb-who strong {
+    font-weight: 600;
+}
+
+.mb-avatar {
+    flex: none;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #d1fae5;
+    color: #065f46;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.mb-amount {
+    font-weight: 700;
+    color: var(--mb-green);
+}
+
+.mb-amount.due {
+    color: var(--mb-red);
+}
+
+.mb-empty {
+    padding: 40px 24px !important;
+    text-align: center;
+    color: var(--mb-muted);
+}
+
+.mb-foot {
+    padding: 10px 24px;
+    font-size: 13px;
+    color: var(--mb-muted);
+    background: var(--mb-head);
+    border-top: 1px solid var(--mb-border);
+}
+
+/* ---------- Small screens ---------- */
+@media (max-width: 700px) {
+    .mb-head {
+        padding: 16px;
+    }
+
+    .mb-figures {
+        width: 100%;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .mb-tools {
+        flex-wrap: wrap;
+        padding: 0 16px 14px;
+    }
+
+    .mb-search,
+    .mb-sort {
+        flex: 1 1 100%;
+    }
+
+    .mb-table th,
+    .mb-table td {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .mb-foot {
+        padding: 10px 16px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mb .spin {
+        animation: none;
+    }
+
+    .mb *,
+    .mb-search,
+    .mb-sort {
+        transition: none !important;
+    }
+}

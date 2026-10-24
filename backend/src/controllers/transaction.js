@@ -3,15 +3,13 @@ const Transaction = require("../models/transcationSchema.js")
 const { Invitation, Connection } = require("../models/InvitationSchema.js");
 const Notification = require("../models/notification.js");
 const User = require("../models/user.model.js")
-const mongoose = require("mongoose")
+const Payment = require("../models/paymentSchema.js")
 
 
 const AddTransaction = asyncHandler(async (req, res) => {
-    const { merchantId, items, amount, notes } = req.body
+    const { merchantId, items, amount, notes, paidamount } = req.body
     const user_id = req.user._id
 
-    console.log("Storeman ID:", user_id);
-    console.log("Merchant ID:", merchantId);
     if (!merchantId || !user_id || !items || !amount || !notes) {
         return res.status(401).json({
             message: 'All field are required'
@@ -36,23 +34,22 @@ const AddTransaction = asyncHandler(async (req, res) => {
     })
 
 
-    const now = new Date();
-
-
     const connection = await Connection.findOne({
-        storemanId: user_id,
+        storemanID: user_id,
         merchantId: merchantId
     });
 
-    console.log(connection, merchantId, user_id)
 
     if (!connection) {
         return res.status(404).json({
             message: 'Something went wrong'
         })
     }
-    connection.totalamount += Number(amount);
+    connection.totalamount = connection.totalamount + Number(amount);
+    connection.totalpaid += paidamount
     await connection.save();
+
+    const now = new Date();
 
 
     const transaction = await Transaction.create({
@@ -69,6 +66,14 @@ const AddTransaction = asyncHandler(async (req, res) => {
         description: notes
     })
 
+    await Payment.create({
+        storemanId: user_id,
+        merchantId,
+        status: 'Approve',
+        amount: paidamount,
+        notes,
+        transactionId: transaction._id
+    })
     if (!transaction) {
         return res.status(500).json({
             message: 'Something went wrong'
@@ -84,14 +89,24 @@ const AddTransaction = asyncHandler(async (req, res) => {
 const GetdailyTranscation = asyncHandler(async (req, res) => {
     const user_id = req.user._id
     const role = req.user.role
+    console.log(role)
     if (role === 'merchant') {
+
         const formerchant = await Transaction.find({
             merchantId: user_id
         }).sort({ createdAt: -1 })
 
-        if (formerchant === 0) {
-            return res.status(401).json({
-                message: 'No Transcation there'
+        if (formerchant.length === 0) {
+            const data = await Connection.findOne({ merchantId: user_id })
+            const user = await User.findOne(data.storemanID)
+            const body = [{
+                username: user.username,
+                role: user.role,
+            }]
+            console.log(body)
+            return res.status(200).json({
+                message: 'No Transcation there',
+                body: body
             })
         }
 
@@ -103,9 +118,16 @@ const GetdailyTranscation = asyncHandler(async (req, res) => {
                     .sort({ updatedAt: -1 })
                     .select("username");
 
+                const payment = await Payment.findOne({
+                    transactionId: user._id
+                })
+                    .sort({ updatedAt: -1 })
+                    .select("amount");
+
                 return {
                     ...user.toObject(),
                     username: invitation?.username || "",
+                    paidamount: payment?.amount || ""
                 }
             })
         )
@@ -135,9 +157,32 @@ const GetdailyTranscation = asyncHandler(async (req, res) => {
                 .sort({ updatedAt: -1 })
                 .select("username");
 
+            const payment = await Payment.findOne({
+                transactionId: user._id
+            })
+                .sort({ updatedAt: -1 })
+                .select("amount");
+
             return {
                 ...user.toObject(),
                 username: invitation?.username || "",
+                paidamount: payment?.amount || ""
+            }
+        })
+    )
+
+    const balanceamount = await Connection.find({
+        storemanID: user_id
+    })
+
+    const mechantdetailsbalance = await Promise.all(
+        balanceamount.map(async (data) => {
+            const user = await User.findOne(data.merchantId).select("username phonenumber")
+
+            return {
+                ...data.toObject(),
+                username: user?.username || "",
+                phonenumber: user?.phonenumber || ""
             }
         })
     )
@@ -145,8 +190,37 @@ const GetdailyTranscation = asyncHandler(async (req, res) => {
     return res.status(200).json({
         message: 'transcation data',
         body: merchantdetails,
-        role: role
+        balance: mechantdetailsbalance,
+        role: role,
     })
 })
 
-module.exports = { AddTransaction, GetdailyTranscation }
+const GetmerchantTransaction = asyncHandler(async (req, res) => {
+    const user_id = req.user._id
+    const balanceamount = await Connection.find({
+        storemanID: user_id
+    })
+    if (!balanceamount) {
+        return res.status(401).json({
+            message: 'No connection'
+        })
+    }
+    const merchantdetailsbalance = await Promise.all(
+        balanceamount.map(async (data) => {
+            const user = await User.findOne(data.merchantId).select("username phonenumber")
+
+            return {
+                ...data.toObject(),
+                username: user?.username || "",
+                phonenumber: user?.phonenumber || ""
+            }
+        })
+    )
+
+    return res.status(200).json({
+        message: "This are details",
+        body: merchantdetailsbalance
+    })
+})
+
+module.exports = { AddTransaction, GetdailyTranscation, GetmerchantTransaction }

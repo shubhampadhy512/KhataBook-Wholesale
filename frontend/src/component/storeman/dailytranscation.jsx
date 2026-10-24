@@ -26,49 +26,103 @@ const cap = (text) => (text ? text.charAt(0).toUpperCase() + text.slice(1) : "-"
 
 const inr = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
 
-// Status depends only on the due date: overdue if it has passed, otherwise pending
+// Overdue if the due date has passed, otherwise pending
+// ("done" is added later in addBalances)
 const statusOf = (dueDate) => {
     if (!dueDate) return "";
     return dueDate < toLocalISO(new Date()) ? "overdue" : "pending";
 };
 
+// finds the paid amount anywhere inside an entry
+const findPaid = (obj, depth = 0) => {
+    if (!obj || typeof obj !== "object" || depth > 4) return undefined;
+    for (const [key, val] of Object.entries(obj)) {
+        if (!/paid/i.test(key) || /^(is|un)paid/i.test(key)) continue;
+        const n = typeof val === "number" ? val : Number(String(val ?? "").replace(/,/g, ""));
+        if (n > 0) return n;
+    }
+    for (const val of Object.values(obj)) {
+        const found = findPaid(val, depth + 1);
+        if (found !== undefined) return found;
+    }
+    return undefined;
+};
+
+// One backend entry -> one table row
 // One backend entry -> one table row
 const toRow = (e) => {
     const dueDate = toLocalISO(e.duedate);
+    const isPurchase = e.type === "Purchase";
+
+    const paidRaw = findPaid(e);
+    const paidNow = Number(String(paidRaw ?? "").replace(/,/g, "")) || 0;
+
+    // purchase: bill adds to credit, amount paid while taking goods counts as paid
+    // payment : the whole amount counts as paid
+    const rowCredit = isPurchase ? Number(e.amount) || 0 : 0;
+    const rowPaid = isPurchase ? paidNow : paidNow || Number(e.amount) || 0;
+
+    // text shown in the Description column
+    let title = "";
+    let sub = "";
+
+    if (isPurchase) {
+        title = e.items?.length ? e.items.map((i) => i.name).join(", ") : e.description ?? "";
+        sub = e.items?.length ? `${e.items.length} item${e.items.length === 1 ? "" : "s"}` : "";
+    } else {
+        title = e.paymentMode ? `Payment · ${e.paymentMode}` : "Payment";
+        sub = `Paid ${inr(rowPaid)}${e.description ? " · " + e.description : ""}`;
+    }
 
     return {
         id: e._id,
-        merchantKey: String(e.merchantId),                     // only used to keep each merchant's balance separate
+        merchantKey: String(e.merchantId),
         merchant: cap(e.username),
+        createdAt: e.createdAt,
         date: toLocalISO(e.createdAt),
-        title: e.items?.length ? e.items.map((i) => i.name).join(", ") : e.description ?? "",
-        sub: e.items?.length ? `${e.items.length} item${e.items.length === 1 ? "" : "s"}` : e.reference ?? "",
-        type: e.type === "Purchase" ? "credit" : "payment",
-        amount: e.amount,
+        title,
+        sub,
+        type: isPurchase ? "credit" : "payment",
+        rowCredit,
+        rowPaid,
         dueDate,
-        status: statusOf(dueDate),
+        status: isPurchase ? statusOf(dueDate) : "",
     };
 };
 
 // Running balance per merchant: credits add, payments subtract
 const addBalances = (rows) => {
     const totals = {};
-    return [...rows]
-        .sort((a, b) => (a.date > b.date ? 1 : -1))            // oldest first
+
+    // Step 1: running balance for every row (oldest first)
+    const withBalance = [...rows]
+        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
         .map((r) => {
             const t = totals[r.merchantKey] || { credit: 0, paid: 0 };
-            if (r.type === "credit") t.credit += r.amount;
-            else t.paid += r.amount;
+            t.credit += r.rowCredit;
+            t.paid += r.rowPaid;
             totals[r.merchantKey] = t;
 
             return { ...r, credit: t.credit, paid: t.paid, balance: t.credit - t.paid };
         });
+
+    // Step 2: if the merchant's final balance is 0, mark their credit rows as "done"
+    return withBalance.map((r) => {
+        const t = totals[r.merchantKey];
+        const finalBalance = t.credit - t.paid;
+
+        if (r.type === "credit" && finalBalance <= 0) {
+            return { ...r, status: "done" };
+        }
+        return r;
+    });
 };
 
 export default function DailyHistory() {
     const [entries, setEntries] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [storeName, setStoreName] = useState("");
 
     // for storeman this holds a merchant name, for merchant it holds "credit" / "payment"
     const [merchant, setMerchant] = useState("");
@@ -81,19 +135,27 @@ export default function DailyHistory() {
     useEffect(() => {
         const getLedger = async () => {
             try {
-                const response = await fetch(`${BACKEND}/daily-transcation`, {   // change to your route
+                const response = await fetch(`${BACKEND}/daily-transcation`, {
                     method: "GET",
                     credentials: "include",
                 });
                 const data = await response.json();
+                console.log(data);
 
                 if (!response.ok) {
                     setError(data.message || "Could not load the ledger.");
                     return;
                 }
-                setRole(data.role);
-                console.log(data)
-                setEntries(addBalances((data.body || []).map(toRow)));
+
+                // keep only real transactions (the "no transaction" placeholder has no _id)
+                const realEntries = (data.body || []).filter((e) => e._id);
+
+                // if the backend sent no role and there are no transactions,
+                // treat it as a merchant with an empty ledger
+                setRole(data.role || (realEntries.length === 0 ? "merchant" : ""));
+
+                setEntries(addBalances(realEntries.map(toRow)));
+                setStoreName(data.body?.[0]?.username || "");
             } catch (err) {
                 console.log("error in get ledger", err.message);
                 setError("Can't reach the server. Please try again.");
@@ -106,6 +168,9 @@ export default function DailyHistory() {
     }, []);
 
     const merchantNames = [...new Set(entries.map((e) => e.merchant))];
+
+    // name shown in the merchant header
+    const headerName = entries.at(-1)?.merchant || (storeName ? cap(storeName) : "");
 
     // apply the filters, newest first
     const rows = entries
@@ -146,11 +211,11 @@ export default function DailyHistory() {
                     <div className="ledger-card">
                         <div className="ledger-card-left">
                             <div className="ledger-avatar">
-                                {(entries.at(-1)?.merchant || "?").slice(0, 2).toUpperCase()}
+                                {(headerName || "?").slice(0, 2).toUpperCase()}
                             </div>
 
                             <div className="ledger-store-info">
-                                <h3>{entries.at(-1)?.merchant || "My Store"}</h3>
+                                <h3>{headerName || "My Store"}</h3>
                             </div>
                         </div>
 
@@ -247,14 +312,16 @@ export default function DailyHistory() {
                                         <div>{e.title}</div>
                                         {e.sub && <div className="cl-sub">{e.sub}</div>}
                                     </td>
-                                    <td className="cl-right cl-credit">{e.type === "credit" ? inr(e.amount) : ""}</td>
-                                    <td className="cl-right cl-payment">{e.type === "payment" ? inr(e.amount) : ""}</td>
+                                    <td className="cl-right cl-credit">{e.type === "credit" ? inr(e.rowCredit) : ""}</td>
+                                    <td className="cl-right cl-payment">
+                                        {e.rowPaid > 0 ? inr(e.rowPaid) : e.type === "credit" ? "-" : ""}
+                                    </td>
                                     <td className="cl-right cl-balance">{inr(e.balance)}</td>
                                     <td className="cl-muted">{fmtDate(e.dueDate)}</td>
                                     <td>
                                         {e.status && (
                                             <span className={`cl-pill cl-pill-${e.status}`}>
-                                                <i /> {e.status === "overdue" ? "Overdue" : "Pending"}
+                                                <i /> {cap(e.status)}
                                             </span>
                                         )}
                                     </td>
