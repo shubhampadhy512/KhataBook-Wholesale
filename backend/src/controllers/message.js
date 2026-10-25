@@ -111,6 +111,31 @@ const UpdateMessage = asyncHandler(async (req, res) => {
             message: 'Invalid notification'
         });
     }
+
+    const checkconnection = await Connection.findOne({
+        merchantId: _id
+    });
+
+    if (checkconnection) {
+        await Invitation.findOneAndUpdate(
+            {
+                userId: seenmessage.senderId,
+                receive_id: _id
+            },
+            {
+                $set: { status: '' }
+            }
+        );
+
+        await Notification.findByIdAndUpdate(id, {
+            $set: { isRead: true }
+        });
+
+        return res.status(409).json({
+            message: 'You already have a storeman'
+        });
+    }
+
     // Update the invitation
     const newstatus = status === 'Decline' ? "" : status
     const invitation = await Invitation.findOneAndUpdate({

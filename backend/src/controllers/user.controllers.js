@@ -465,9 +465,29 @@ const FindStoremanOrMerchant = asyncHandler(async (req, res, next) => {
         })
     );
 
+    const filterresult = (
+        await Promise.all(
+            result.map(async (user) => {
+                const data = await Connection.findOne({
+                    merchantId: user._id
+                });
+
+                if (!data) {
+                    return user;
+                }
+
+                return null;
+            })
+        )
+    ).filter(user => user !== null);
+
+    console.log(filterresult);
+
+    console.log(filterresult)
+
     return res.status(201).json({
         message: 'This is search based on role',
-        info: result
+        info: filterresult
     })
 })
 

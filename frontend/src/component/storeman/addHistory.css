@@ -14,6 +14,7 @@
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
+    margin-top: -29px;
     padding: 24px;
     color: var(--ce-text);
     box-sizing: border-box;
