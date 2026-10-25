@@ -9,7 +9,7 @@ const { registerUser,
     resendOtp,
     ResetPassword,
     VerifyOtp,
-    Changepass_validateEmail, getMerchantdetails } = require("../controllers/user.controllers.js")
+    Changepass_validateEmail, getMerchantdetails, getUserdetails } = require("../controllers/user.controllers.js")
 
 const { InvitationSend, Listofmessage, UpdateMessage, NormalMessageSeen } = require("../controllers/message.js")
 const { AddTransaction, GetdailyTranscation, GetmerchantTransaction } = require('../controllers/transaction.js')
@@ -34,6 +34,7 @@ router.route("/forgot-password/reset").post(ResetPassword)
 
 router.route("/resendOtp").post(resendOtp)
 
+router.route("/user").get(VerifyUser, getUserdetails)
 
 router.route("/merchantsdetails").get(VerifyUser, getMerchantdetails)
 

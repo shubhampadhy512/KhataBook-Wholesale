@@ -511,6 +511,23 @@ const getMerchantdetails = asyncHandler(async (req, res) => {
     })
 })
 
+const getUserdetails = asyncHandler(async (req, res) => {
+    const { _id } = req.user._id
+
+    if (!_id) {
+        return res.status(400).json({
+            message: 'User not found'
+        })
+    }
+    const user = await User.findById(_id).select("-phonenumber -addresses -password -refreshToken")
+    console.log(user)
+    return res.status(200).json({
+        message: 'This details',
+        body: user
+    })
+})
+
+
 module.exports = {
     registerUser,
     registerVerification,
@@ -522,5 +539,6 @@ module.exports = {
     ResetPassword,
     Changepass_validateEmail,
     VerifyOtp,
-    getMerchantdetails
+    getMerchantdetails,
+    getUserdetails
 }
