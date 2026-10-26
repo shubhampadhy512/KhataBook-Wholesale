@@ -44,7 +44,10 @@ const TransactionSchema = new mongoose.Schema({
 
     amount: {
         type: Number,
-        required: true,
+        min: 0
+    },
+    paidamount: {
+        type: Number,
         min: 0
     },
     duedate: {

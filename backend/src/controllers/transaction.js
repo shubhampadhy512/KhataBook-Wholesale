@@ -58,6 +58,7 @@ const AddTransaction = asyncHandler(async (req, res) => {
         type: 'Purchase',
         items: items,
         amount,
+        paidamount,
         duedate: new Date(
             now.getFullYear(),
             now.getMonth() + 1,
@@ -127,7 +128,7 @@ const GetdailyTranscation = asyncHandler(async (req, res) => {
                 return {
                     ...user.toObject(),
                     username: invitation?.username || "",
-                    paidamount: payment?.amount || ""
+                    paidamount: payment?.amount || 0
                 }
             })
         )
@@ -166,7 +167,7 @@ const GetdailyTranscation = asyncHandler(async (req, res) => {
             return {
                 ...user.toObject(),
                 username: invitation?.username || "",
-                paidamount: payment?.amount || ""
+                paidamount: payment?.amount || 0
             }
         })
     )
@@ -186,6 +187,8 @@ const GetdailyTranscation = asyncHandler(async (req, res) => {
             }
         })
     )
+
+    console.log(merchantdetails)
 
     return res.status(200).json({
         message: 'transcation data',

@@ -1,4 +1,10 @@
 .md-main {
+    /* ---- Layout knobs ---- */
+    --md-navbar: 64px;
+    /* your top navbar height (0px if none) */
+    --md-pull: 45px;
+    /* the -45px margin-top */
+
     --md-bg: #f8fafb;
     --md-card: #ffffff;
     --md-border: #e6ebf0;
@@ -7,6 +13,7 @@
     --md-green: #0d7a55;
     --md-green-text: #0b8a62;
     --md-orange: #e8480c;
+    --md-red: #c0261b;
 
     flex: 1;
     min-width: 0;
@@ -44,42 +51,6 @@
     color: var(--md-muted);
 }
 
-.md-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 20px;
-    border-radius: 12px;
-    background: var(--md-green);
-    color: #fff;
-    font-size: 16px;
-    font-weight: 600;
-    text-decoration: none;
-    white-space: nowrap;
-    transition: background-color 0.15s ease;
-}
-
-.md-btn:hover {
-    background: #0a6a49;
-}
-
-.md-btn:focus-visible {
-    outline: 2px solid var(--md-green);
-    outline-offset: 3px;
-}
-
-/* Success notice */
-.md-notice {
-    margin-bottom: 30px;
-    padding: 20px 20px;
-    border: 1px solid #a9d9c5;
-    border-radius: 16px;
-    background: #e1f0ea;
-    color: var(--md-green-text);
-    font-size: 17px;
-    line-height: 1.4;
-}
-
 /* Cards */
 .md-card {
     border: 1px solid var(--md-border);
@@ -88,10 +59,10 @@
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
 }
 
-/* Stat row */
+/* Stat row (3 cards) */
 .md-stats {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
     margin-bottom: 30px;
 }
@@ -99,7 +70,7 @@
 .md-stat {
     display: flex;
     flex-direction: column;
-    min-height: 162px;
+    min-height: 150px;
     padding: 24px 24px 20px;
 }
 
@@ -122,7 +93,6 @@
     width: 50px;
     height: 50px;
     flex-shrink: 0;
-    margin: -0.5px 0 0;
     border-radius: 12px;
 }
 
@@ -150,7 +120,7 @@
 }
 
 .md-stat-note {
-    margin-top: 14px;
+    margin-top: 12px;
     font-size: 15px;
     color: var(--md-muted);
 }
@@ -158,16 +128,20 @@
 /* Lower panels */
 .md-panels {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
     gap: 30px;
     align-items: start;
 }
 
 .md-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
     overflow: hidden;
 }
 
 .md-panel-title {
+    flex-shrink: 0;
     margin: 0;
     padding: 24px 25px 22px;
     border-bottom: 1px solid var(--md-border);
@@ -175,13 +149,37 @@
     font-weight: 600;
 }
 
+.md-empty {
+    margin: 0;
+    padding: 24px 25px;
+    color: var(--md-muted);
+}
+
+/* Payment list (this is the only part that scrolls) */
 .md-list {
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-.md-row {
+.md-submissions .md-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.md-submissions .md-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.md-submissions .md-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+
+.md-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -189,34 +187,35 @@
     padding: 16px 25px;
 }
 
-.md-row+.md-row {
+.md-item+.md-item {
     border-top: 1px solid var(--md-border);
 }
 
-.md-row-main {
+.md-item-main {
     min-width: 0;
 }
 
-.md-row-line {
+.md-item-line {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    gap: 4px 8px;
+    gap: 4px 10px;
 }
 
-.md-row-amount {
+.md-item-amount {
     font-size: 21px;
     font-weight: 700;
     letter-spacing: -0.01em;
 }
 
-.md-row-meta {
+.md-item-meta {
     font-size: 15px;
     color: var(--md-muted);
+    overflow-wrap: anywhere;
 }
 
-.md-row-sub {
-    margin-top: 1px;
+.md-item-sub {
+    margin-top: 2px;
     font-size: 15px;
     color: var(--md-muted);
 }
@@ -254,27 +253,92 @@
     color: #0b8a62;
 }
 
-/* Dues */
-.md-due-title {
-    font-size: 18px;
+.md-pill.is-rejected {
+    border-color: #f5b5b0;
+    background: #fdeceb;
+    color: var(--md-red);
+}
+
+/* Quick actions */
+.md-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    padding: 22px 25px 25px;
+}
+
+.md-action {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 18px;
+    border: 1px solid var(--md-border);
+    border-radius: 14px;
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.md-action:hover {
+    border-color: var(--md-green);
+    background: #f1faf6;
+}
+
+.md-action:focus-visible {
+    outline: 2px solid var(--md-green);
+    outline-offset: 2px;
+}
+
+.md-action-icon {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: #dcf5ea;
+    color: var(--md-green-text);
+}
+
+.md-action-label {
+    font-size: 16px;
     font-weight: 600;
 }
 
-.md-due-amount {
-    align-self: flex-start;
-    margin-top: 8px;
-    font-size: 20px;
-    font-weight: 700;
-}
+/* ==========================================================
+   DESKTOP: page static, only the payment list scrolls
+   ========================================================== */
+@media (min-width: 961px) and (min-height: 720px) {
+    .md-main {
+        margin-top: calc(var(--md-pull) * -1);
+        height: calc(100dvh - var(--md-navbar) + var(--md-pull));
+        padding-top: var(--md-pull);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
 
-.md-empty {
-    margin: 0;
-    padding: 24px 25px;
-    color: var(--md-muted);
+    .md-header,
+    .md-stats {
+        flex-shrink: 0;
+    }
+
+    .md-panels {
+        flex: 1;
+        min-height: 0;
+        align-items: stretch;
+        padding-bottom: 4px;
+        /* keeps card shadow from being clipped */
+    }
+
+    .md-quick {
+        align-self: start;
+        /* quick actions keeps its natural height */
+    }
 }
 
 /* Responsive */
-@media (max-width: 1280px) {
+@media (max-width: 1100px) {
     .md-stats {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -284,24 +348,29 @@
     .md-panels {
         grid-template-columns: minmax(0, 1fr);
     }
+
+    .md-submissions .md-list {
+        max-height: 60vh;
+    }
 }
 
 @media (max-width: 640px) {
-    .md-header {
-        flex-direction: column;
-    }
-
     .md-stats {
         grid-template-columns: minmax(0, 1fr);
     }
 
-    .md-row {
+    .md-item {
         flex-direction: column;
         align-items: flex-start;
     }
 
-    .md-due-amount {
-        align-self: auto;
-        margin-top: 0;
+    .md-actions {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .md-action {
+        transition: none;
     }
 }

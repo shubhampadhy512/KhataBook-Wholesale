@@ -23,12 +23,12 @@ const QUICK_ACTIONS = [
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 
-/* Last 6 months with 0 values (used until / unless the backend sends real data) */
+/* Last 6 months (with year) and 0 values, used until / unless the backend sends real data */
 const emptyChart = () => {
     const now = new Date();
     return Array.from({ length: 6 }, (_, i) => {
         const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
-        return { month: MONTHS[d.getMonth()], credit: 0, payments: 0 };
+        return { month: MONTHS[d.getMonth()], year: d.getFullYear(), credit: 0, payments: 0 };
     });
 };
 
@@ -105,13 +105,19 @@ function CreditChart({ data }) {
             ))}
             {data.map((d, i) => {
                 const gx = left + i * groupW + (groupW - (barW * 2 + gap)) / 2;
+                const cx = left + i * groupW + groupW / 2;
                 return (
-                    <g key={`${d.month}-${i}`}>
+                    <g key={`${d.month}-${d.year ?? ''}-${i}`}>
                         {bar(gx, d.credit, 'sd-bar-credit')}
                         {bar(gx + barW + gap, d.payments, 'sd-bar-pay')}
-                        <text className="sd-axis" x={left + i * groupW + groupW / 2} y={top + plotH + 26} textAnchor="middle">
+                        <text className="sd-axis" x={cx} y={top + plotH + 24} textAnchor="middle">
                             {d.month}
                         </text>
+                        {d.year && (
+                            <text className="sd-axis sd-axis-year" x={cx} y={top + plotH + 42} textAnchor="middle">
+                                {d.year}
+                            </text>
+                        )}
                     </g>
                 );
             })}
@@ -145,13 +151,14 @@ export default function StoremanDashboard() {
 
         const fetchDashboard = async () => {
             try {
-                const res = await fetch(`${API}/storeman/dashboard`, {
+                const res = await fetch(`${API}/getdashboarddetails`, {
                     method: 'GET',
                     credentials: 'include',
                     signal: controller.signal,
                 });
 
                 const data = await res.json().catch(() => ({}));
+                console.log(data)
                 if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`);
 
                 const body = data.body || {};

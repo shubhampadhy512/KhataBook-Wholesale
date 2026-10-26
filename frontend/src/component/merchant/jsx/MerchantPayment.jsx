@@ -1,184 +1,204 @@
-import React, { useEffect, useState } from "react";
-import { Search } from "lucide-react";
-import "../cssfile/MerchantPayments.css" // all styles for this page are in this one file
+import { useState } from 'react';
+import { Smartphone, Banknote, FileText, Landmark, Check, ChevronRight } from 'lucide-react';
+import '../cssfile/SubmitPayment.css';
 
-const BACKEND = import.meta.env.VITE_BACKEND_URL;
-const ENDPOINT = "/getpayment"; // change to your route (GET, returns { message, body: [...] })
+const METHODS = [
+    { id: 'UPI', label: 'UPI', note: 'GPay, PhonePe, Paytm', Icon: Smartphone, ref: 'UPI ref / UTR number' },
+    { id: 'Cash', label: 'Cash', note: 'Handed to the storeman', Icon: Banknote, ref: 'Receipt no. (if any)' },
+    { id: 'Cheque', label: 'Cheque', note: 'Cheque deposited', Icon: FileText, ref: 'Cheque number' },
+    { id: 'Bank transfer', label: 'Bank transfer', note: 'NEFT / IMPS / RTGS', Icon: Landmark, ref: 'Bank reference number' },
+];
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"];
+const formatINR = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`;
+const today = () => new Date().toISOString().slice(0, 10);
 
-// Any date value from the backend -> "2026-11-10" in the user's local time
-const toLocalISO = (value) => {
-    if (!value) return "";
-    const d = new Date(value);
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    return `${d.getFullYear()}-${mm}-${dd}`;
-};
+/*
+ * Props (same as before):
+ *  balance   - outstanding balance (number)
+ *  pending   - amount already pending verification (number)
+ *  targets   - [{ value, label, amount }] for "Pay towards"
+ *  onSubmit  - async (formData) => void   (throw an Error to show a message)
+ */
+export default function SubmitPayment({
+    balance = 0,
+    pending = 0,
+    targets = [{ value: 'balance', label: 'Account balance', amount: balance }],
+    onSubmit,
+}) {
+    const [target, setTarget] = useState(targets[0]?.value ?? '');
+    const [amount, setAmount] = useState('');
+    const [date, setDate] = useState(today());
+    const [method, setMethod] = useState('UPI');
+    const [reference, setReference] = useState('');
+    const [error, setError] = useState('');
+    const [done, setDone] = useState(false);
+    const [busy, setBusy] = useState(false);
 
-// "2026-11-10" -> "10 Nov 2026"
-const fmtDate = (iso) => {
-    if (!iso) return "—";
-    const [y, m, d] = iso.split("-");
-    return `${d} ${MONTHS[Number(m) - 1]} ${y}`;
-};
+    const current = targets.find((t) => t.value === target);
+    const due = current?.amount ?? balance;
+    const picked = METHODS.find((m) => m.id === method);
+    const entered = Number(amount) || 0;
+    const left = Math.max(due - entered, 0);
 
-const cap = (text) => (text ? text.charAt(0).toUpperCase() + text.slice(1) : "-");
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setDone(false);
 
-const inr = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
+        if (!(entered > 0)) return setError('Enter the amount you paid.');
+        if (!reference.trim()) return setError('Add the transaction reference so the storeman can match it.');
 
-// Backend status -> colour group: "good" (green), "wait" (amber), "bad" (red)
-const groupOf = (status) => {
-    const s = String(status || "").toLowerCase();
-    if (["verified", "approved", "confirmed", "done", "paid", "success"].includes(s)) return "good";
-    if (["rejected", "failed", "declined", "cancelled"].includes(s)) return "bad";
-    return "wait"; // pending or anything else
-};
+        const body = new FormData();
+        body.append('target', target);
+        body.append('amount', amount);
+        body.append('date', date);
+        body.append('method', method);
+        body.append('reference', reference.trim());
 
-// One backend payment -> one table row
-const toRow = (p) => ({
-    id: p._id,
-    date: toLocalISO(p.createdAt),
-    title: p.paymentMode ? `Payment · ${p.paymentMode}` : "Payment",
-    sub: `Paid ${inr(p.amount)}${p.description ? " · " + p.description : ""}`,
-    amount: Number(p.amount) || 0,
-    statusText: p.status ? cap(p.status) : "Pending",
-    group: groupOf(p.status),
-});
-
-export default function MerchantPayments() {
-    const [payments, setPayments] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-
-    const [filter, setFilter] = useState(""); // "" | good | wait | bad
-    const [search, setSearch] = useState("");
-    const [fromDate, setFromDate] = useState("");
-    const [toDate, setToDate] = useState("");
-
-    // GET this merchant's payments once, when the page opens
-    useEffect(() => {
-        const getPayments = async () => {
-            try {
-                const response = await fetch(BACKEND + ENDPOINT, {
-                    method: "GET",
-                    credentials: "include",
-                });
-                const data = await response.json();
-
-                if (!response.ok) {
-                    setError(data.message || "Could not load your payments.");
-                    return;
-                }
-
-                // keep only real payments (a "no payment" placeholder has no _id)
-                const real = (data.body || []).filter((p) => p._id);
-
-                // newest first
-                real.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                setPayments(real.map(toRow));
-            } catch (err) {
-                console.log("error in get payments:", err.message);
-                setError("Can't reach the server. Please try again.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        getPayments();
-    }, []);
-
-    // Apply the filters
-    const q = search.trim().toLowerCase();
-    const rows = payments.filter((p) => {
-        if (filter && p.group !== filter) return false;
-        if (fromDate && p.date < fromDate) return false;
-        if (toDate && p.date > toDate) return false;
-        return `${p.title} ${p.sub}`.toLowerCase().includes(q);
-    });
-
-    const clearFilters = () => {
-        setFilter("");
-        setSearch("");
-        setFromDate("");
-        setToDate("");
+        try {
+            setBusy(true);
+            await onSubmit?.(body);
+            setDone(true);
+            setAmount('');
+            setReference('');
+        } catch (err) {
+            setError(err.message || 'Could not send the payment. Try again.');
+        } finally {
+            setBusy(false);
+        }
     };
 
-    // Message shown inside the table when there are no rows
-    let message = "";
-    if (loading) message = "Loading payments…";
-    else if (error) message = error;
-    else if (rows.length === 0) message = payments.length === 0 ? "No payments yet." : "No entries found.";
-
     return (
-        <div className="mp-page">
-            <div className="mp-header">
-                <h1>My Payments</h1>
-                <p>Every payment you made and whether it is verified.</p>
-            </div>
+        <main className="pay">
+            <form className="pay-form" onSubmit={handleSubmit} noValidate>
+                <section className="pay-hero">
+                    <h1 className="pay-title">Submit payment</h1>
 
-            <div className="mp-card">
-                {/* Filters */}
-                <div className="mp-filters">
-                    <select className="mp-select" value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Filter by status">
-                        <option value="">All entries</option>
-                        <option value="good">Verified</option>
-                        <option value="wait">Pending</option>
-                        <option value="bad">Rejected</option>
-                    </select>
+                    {targets.length > 1 && (
+                        <select
+                            className="pay-target"
+                            aria-label="Pay towards"
+                            value={target}
+                            onChange={(e) => setTarget(e.target.value)}
+                        >
+                            {targets.map((t) => (
+                                <option key={t.value} value={t.value}>
+                                    {t.label} ({formatINR(t.amount)})
+                                </option>
+                            ))}
+                        </select>
+                    )}
 
-                    <div className="mp-search">
-                        <Search size={16} />
+                    <label htmlFor="pay-amount" className="pay-hero-label">
+                        Amount paid
+                    </label>
+                    <div className="pay-amount-row">
+                        <span className="pay-rupee" aria-hidden="true">₹</span>
                         <input
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search description or reference"
+                            id="pay-amount"
+                            className="pay-amount"
+                            type="number"
+                            inputMode="decimal"
+                            min="0"
+                            placeholder="0"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
                         />
                     </div>
 
-                    <input type="date" className="mp-date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} aria-label="From date" />
-                    <input type="date" className="mp-date" value={toDate} onChange={(e) => setToDate(e.target.value)} aria-label="To date" />
+                    <div className="pay-due">
+                        <span>
+                            You owe <strong>{formatINR(due)}</strong>
+                        </span>
+                        {due > 0 && (
+                            <button type="button" className="pay-fill" onClick={() => setAmount(String(due))}>
+                                Pay full amount
+                            </button>
+                        )}
+                    </div>
+                    {pending > 0 && <p className="pay-pending">{formatINR(pending)} is waiting for approval</p>}
+                </section>
 
-                    <button type="button" className="mp-clear" onClick={clearFilters}>Clear</button>
-                </div>
+                <section className="pay-sheet">
+                    {done && (
+                        <div className="pay-note is-ok" role="status">
+                            <Check size={18} />
+                            <span>Sent. Your balance updates once the storeman verifies it.</span>
+                        </div>
+                    )}
+                    {error && (
+                        <div className="pay-note is-err" role="alert">
+                            {error}
+                        </div>
+                    )}
 
-                {/* Table */}
-                <div className="mp-table-wrap">
-                    <table className="mp-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Description</th>
-                                <th className="mp-right mp-gap">Payment</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {message && (
-                                <tr>
-                                    <td colSpan={4} className="mp-empty">{message}</td>
-                                </tr>
-                            )}
-
-                            {!message && rows.map((p) => (
-                                <tr key={p.id}>
-                                    <td className="mp-muted">{fmtDate(p.date)}</td>
-                                    <td>
-                                        <div>{p.title}</div>
-                                        {p.sub && <div className="mp-sub">{p.sub}</div>}
-                                    </td>
-                                    <td className="mp-right mp-payment mp-gap">{inr(p.amount)}</td>
-                                    <td>
-                                        <span className={`mp-pill mp-pill-${p.group}`}>
-                                            <i /> {p.statusText}
-                                        </span>
-                                    </td>
-                                </tr>
+                    <fieldset className="pay-group">
+                        <legend className="pay-legend">How did you pay?</legend>
+                        <div className="pay-methods" role="radiogroup">
+                            {METHODS.map(({ id, label, note, Icon }) => (
+                                <button
+                                    key={id}
+                                    type="button"
+                                    role="radio"
+                                    aria-checked={method === id}
+                                    className={`pay-method ${method === id ? 'is-on' : ''}`}
+                                    onClick={() => setMethod(id)}
+                                >
+                                    <span className="pay-method-icon">
+                                        <Icon size={20} />
+                                    </span>
+                                    <span className="pay-method-text">
+                                        <strong>{label}</strong>
+                                        <small>{note}</small>
+                                    </span>
+                                    <span className="pay-dot" aria-hidden="true" />
+                                </button>
                             ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+                        </div>
+                    </fieldset>
+
+                    <div className="pay-fields">
+                        <label className="pay-field">
+                            <span className="pay-legend">Reference</span>
+                            <input
+                                className="pay-input"
+                                type="text"
+                                placeholder={picked.ref}
+                                value={reference}
+                                onChange={(e) => setReference(e.target.value)}
+                            />
+                        </label>
+                        <label className="pay-field">
+                            <span className="pay-legend">Paid on</span>
+                            <input
+                                className="pay-input"
+                                type="date"
+                                max={today()}
+                                value={date}
+                                onChange={(e) => setDate(e.target.value)}
+                            />
+                        </label>
+                    </div>
+
+                    <div className="pay-summary" aria-live="polite">
+                        {entered > 0 ? (
+                            <>
+                                <span>
+                                    {formatINR(entered)} by {method}
+                                </span>
+                                <span>{left > 0 ? `${formatINR(left)} will remain` : 'Clears your balance'}</span>
+                            </>
+                        ) : (
+                            <span>Enter the amount to see what remains</span>
+                        )}
+                    </div>
+
+                    <button type="submit" className="pay-submit" disabled={busy}>
+                        {busy ? 'Sending…' : 'Send to storeman'}
+                        {!busy && <ChevronRight size={20} />}
+                    </button>
+                </section>
+            </form>
+        </main>
     );
 }

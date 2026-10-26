@@ -89,15 +89,16 @@ const AddPayment = asyncHandler(async (req, res) => {
     })
 
 
-    await Transaction.create({
+    const transaction = await Transaction.create({
         storemanId: user_id,
         merchantId: merchantId,
         type: "Payment",
-        amount: amount,
+        paidamount: amount,
         paymentMode: type,
         description: notes,
     })
     const payment = await Payment.create({
+        transactionId: transaction._id,
         storemanId: user_id,
         merchantId: merchantId,
         paymentType: type,
@@ -116,6 +117,10 @@ const AddPayment = asyncHandler(async (req, res) => {
         message: 'Add the payment'
     })
 
+})
+
+const SubmitPayment = asyncHandler(async (req, res) => {
+    
 })
 
 

@@ -1,0 +1,350 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+.pay {
+    --ink: #17213b;
+    --ink-2: #26345a;
+    --sun: #f4b63a;
+    --sun-d: #d99a1c;
+    --bg: #eef1f6;
+    --card: #ffffff;
+    --line: #dde2ec;
+    --text: #1b2338;
+    --muted: #667089;
+    --ok: #17794d;
+    --ok-bg: #e3f4ea;
+    --err: #b3321f;
+    --err-bg: #fbe8e4;
+
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+}
+
+.pay *,
+.pay *::before,
+.pay *::after {
+    box-sizing: border-box;
+}
+
+.pay-form {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ---------- Hero (amount) ---------- */
+.pay-hero {
+    background: var(--ink);
+    color: #fff;
+    padding: 28px 22px 64px;
+}
+
+.pay-title {
+    margin: 0 0 18px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #b9c3de;
+}
+
+.pay-target {
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 10px 12px;
+    font: inherit;
+    font-size: 0.9rem;
+    color: #fff;
+    background: var(--ink-2);
+    border: 1px solid #36457299;
+    border-radius: 10px;
+}
+
+.pay-hero-label {
+    display: block;
+    font-size: 0.85rem;
+    color: #b9c3de;
+}
+
+.pay-amount-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--sun);
+}
+
+.pay-rupee {
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: var(--sun);
+}
+
+.pay-amount {
+    flex: 1;
+    min-width: 0;
+    background: none;
+    border: 0;
+    outline: 0;
+    color: #fff;
+    font: inherit;
+    font-size: 3.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    padding: 0;
+    -moz-appearance: textfield;
+}
+
+.pay-amount::-webkit-outer-spin-button,
+.pay-amount::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.pay-amount::placeholder {
+    color: #ffffff40;
+}
+
+.pay-due {
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9rem;
+    color: #b9c3de;
+}
+
+.pay-due strong {
+    color: #fff;
+}
+
+.pay-fill {
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--ink);
+    background: var(--sun);
+    border: 0;
+    border-radius: 999px;
+    padding: 7px 14px;
+    cursor: pointer;
+}
+
+.pay-fill:hover {
+    background: var(--sun-d);
+}
+
+.pay-pending {
+    margin: 10px 0 0;
+    font-size: 0.82rem;
+    color: var(--sun);
+}
+
+/* ---------- Sheet ---------- */
+.pay-sheet {
+    flex: 1;
+    margin-top: -36px;
+    background: var(--card);
+    border-radius: 26px 26px 0 0;
+    padding: 24px 20px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.pay-note {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.pay-note.is-ok {
+    background: var(--ok-bg);
+    color: var(--ok);
+}
+
+.pay-note.is-err {
+    background: var(--err-bg);
+    color: var(--err);
+}
+
+.pay-group {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+}
+
+.pay-legend {
+    display: block;
+    padding: 0;
+    margin-bottom: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.pay-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pay-method {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    background: #fff;
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.pay-method:hover {
+    border-color: #b6bfd3;
+}
+
+.pay-method.is-on {
+    border-color: var(--ink);
+    background: #f4f6fb;
+}
+
+.pay-method-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    background: var(--bg);
+    color: var(--ink);
+}
+
+.pay-method.is-on .pay-method-icon {
+    background: var(--ink);
+    color: var(--sun);
+}
+
+.pay-method-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.pay-method-text strong {
+    font-size: 0.95rem;
+}
+
+.pay-method-text small {
+    font-size: 0.78rem;
+    color: var(--muted);
+}
+
+.pay-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--line);
+}
+
+.pay-method.is-on .pay-dot {
+    border-color: var(--ink);
+    background: radial-gradient(circle, var(--ink) 0 45%, transparent 50%);
+}
+
+.pay-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.pay-field {
+    min-width: 0;
+}
+
+.pay-input {
+    width: 100%;
+    padding: 12px;
+    font: inherit;
+    font-size: 0.92rem;
+    color: var(--text);
+    background: var(--bg);
+    border: 1.5px solid transparent;
+    border-radius: 12px;
+}
+
+.pay-input:focus {
+    outline: 0;
+    border-color: var(--ink);
+    background: #fff;
+}
+
+.pay-summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    background: var(--bg);
+    border-radius: 12px;
+}
+
+.pay-summary span:first-child {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.pay-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 16px;
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--ink);
+    border: 0;
+    border-radius: 14px;
+    cursor: pointer;
+}
+
+.pay-submit:hover:not(:disabled) {
+    background: var(--ink-2);
+}
+
+.pay-submit:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.pay button:focus-visible,
+.pay select:focus-visible {
+    outline: 3px solid var(--sun);
+    outline-offset: 2px;
+}
+
+@media (max-width: 380px) {
+    .pay-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .pay-amount {
+        font-size: 2.6rem;
+    }
+}

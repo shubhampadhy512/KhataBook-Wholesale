@@ -15,6 +15,7 @@ const { InvitationSend, Listofmessage, UpdateMessage, NormalMessageSeen } = requ
 const { AddTransaction, GetdailyTranscation, GetmerchantTransaction } = require('../controllers/transaction.js')
 const { AddPayment, GetPaymentHistory } = require("../controllers/payment.js")
 const VerifyUser = require("../middlewar/authVerifiy.js")
+const {GetDashboardDetails} = require("../controllers/dashboarddeatils.js")
 
 router.route("/register").post(registerUser)
 
@@ -65,6 +66,9 @@ router.route("/addpayment").post(VerifyUser, AddPayment)
 
 router.route("/getmerchantbalance").get(VerifyUser, GetmerchantTransaction)
 
+//dashboardetails
+
+router.route("/getdashboarddetails").get(VerifyUser, GetDashboardDetails)
 
 
 module.exports = router
