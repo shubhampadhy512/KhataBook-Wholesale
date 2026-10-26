@@ -16,6 +16,29 @@ const AddTransaction = asyncHandler(async (req, res) => {
         })
     }
 
+
+    const connection = await Connection.findOne({
+        storemanID: user_id,
+        merchantId: merchantId
+    });
+
+
+    if (!connection) {
+        return res.status(404).json({
+            message: 'Something went wrong'
+        })
+    }
+    if (connection.totalamount + Number(amount) < connection.totalpaid + paidamount) {
+        return res.status(409).json({
+            message: "Paid amount can't be more than the total credit amount."
+        })
+    }
+    connection.totalamount = connection.totalamount + Number(amount);
+    connection.totalpaid += paidamount
+    await connection.save();
+
+    const status = connection.totalamount - connection.totalpaid === 0 ? 'Approved' : 'Pending'
+
     const inr = (amount) => {
         return new Intl.NumberFormat('en-IN', {
             style: 'currency',
@@ -33,22 +56,6 @@ const AddTransaction = asyncHandler(async (req, res) => {
         type: 'Normal'
     })
 
-
-    const connection = await Connection.findOne({
-        storemanID: user_id,
-        merchantId: merchantId
-    });
-
-
-    if (!connection) {
-        return res.status(404).json({
-            message: 'Something went wrong'
-        })
-    }
-    connection.totalamount = connection.totalamount + Number(amount);
-    connection.totalpaid += paidamount
-    await connection.save();
-
     const now = new Date();
 
 
@@ -58,6 +65,7 @@ const AddTransaction = asyncHandler(async (req, res) => {
         type: 'Purchase',
         items: items,
         amount,
+        status,
         paidamount,
         duedate: new Date(
             now.getFullYear(),

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
-import { Bell, UserPlus, IndianRupee, MessageSquare, CheckCircle2, XCircle } from 'lucide-react'
+import { Bell, UserPlus, MessageSquare, CheckCircle2, XCircle } from 'lucide-react'
 import './notificationbell.css'
 import { showSuccessToast } from "../toastMessage/SuccessToast.jsx"
 import ErrorToastMessage from "../toastMessage/errormessage.jsx"
@@ -11,8 +11,9 @@ const showErrorToast = (message, options = {}) => toast.error(message, options)
 
 /* ---------- Backend shape (GET /notification) ----------
    { message: 'All unread notifications',
+     unreadmessagelength: 3,
      info: [{ _id, senderId, sendername, receiverId, message,
-              type: 'Normal' | 'Payment' | 'Invitation',
+              type: 'Normal' | 'Invitation',
               status?: 'Pending' | 'Approved' | 'Decline',
               isRead, createdAt, updatedAt }] }                                */
 
@@ -22,12 +23,6 @@ const TYPE_CONFIG = {
         iconClass: 'invitation',
         actionable: true,
         title: () => 'Store invitation',
-    },
-    payment: {
-        icon: IndianRupee,
-        iconClass: 'payment',
-        actionable: true,
-        title: () => 'Payment approval',
     },
     normal: {
         icon: MessageSquare,
@@ -71,6 +66,7 @@ const normalize = (n) => {
 
     return {
         id: n._id,
+        type: key,
         icon: cfg.icon,
         iconClass: cfg.iconClass,
         title: cfg.title(n),
@@ -84,12 +80,13 @@ const normalize = (n) => {
 function NotificationBell() {
     const [open, setOpen] = useState(false)
     const [items, setItems] = useState([])
+    const [unreadCount, setUnreadCount] = useState(0) // comes from the backend
     const [loading, setLoading] = useState(false)
     const [busyId, setBusyId] = useState(null)
     const [error, setError] = useState('')
     const rootRef = useRef(null)
 
-    const unreadTotal = items.filter((n) => !n.read).length
+    const unreadTotal = unreadCount
 
     const loadNotifications = useCallback(async () => {
         setLoading(true)
@@ -101,7 +98,14 @@ function NotificationBell() {
             })
             const data = await res.json()
             if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`)
-            setItems((data.info || []).map(normalize))
+
+            const list = data.info || []
+            setItems(list.map(normalize))
+
+            // unread count from the backend (falls back to counting the list)
+            setUnreadCount(
+                Number(data.unreadmessagelength ?? list.filter((n) => !n.isRead).length)
+            )
         } catch (err) {
             console.log('error loading notifications', err.message)
             setError('Could not load notifications.')
@@ -122,30 +126,42 @@ function NotificationBell() {
             })
 
             if (!res.ok) {
-                console.log('Something went wrong in seen message section')
-                return
+                const data = await res.json().catch(() => ({}))
+                throw new Error(data.message || `Request failed (${res.status})`)
             }
 
-            loadNotifications()
+            const unreadPassiveCount = items.filter(
+                (item) => ['normal', 'payment'].includes(item.type) && !item.read
+            ).length
+            setItems((prev) =>
+                prev.map((item) =>
+                    ['normal', 'payment'].includes(item.type) ? { ...item, read: true } : item
+                )
+            )
+            setUnreadCount((count) => Math.max(0, count - unreadPassiveCount))
         } catch (err) {
-            console.log('Error:', err.message)
+            console.error('Error marking normal notifications as read:', err.message)
+            setError('Could not mark notifications as read.')
         }
-    }, [loadNotifications])
+    }, [items])
 
     useEffect(() => {
         if (!open) return
 
+        const closePanel = () => {
+            setOpen(false)
+            isreadnormalmessage()
+        }
+
         const onPointerDown = (e) => {
             if (rootRef.current && !rootRef.current.contains(e.target)) {
-                setOpen(false)
-                isreadnormalmessage()
+                closePanel()
             }
         }
 
         const onKeyDown = (e) => {
             if (e.key === 'Escape') {
-                setOpen(false)
-                isreadnormalmessage()
+                closePanel()
             }
         }
 
@@ -162,11 +178,14 @@ function NotificationBell() {
         const next = !open
         setOpen(next)
         if (next) loadNotifications()
+        else isreadnormalmessage()
     }
 
     /* Marks every notification as read (local only for now) */
-    const markAllRead = () =>
+    const markAllRead = () => {
         setItems((prev) => prev.map((n) => ({ ...n, read: true })))
+        setUnreadCount(0)
+    }
 
     const respond = async (id, status) => {
         if (busyId) return
@@ -192,6 +211,10 @@ function NotificationBell() {
             if (!res.ok) {
                 throw new Error(data.message || `Request failed (${res.status})`)
             }
+
+            // answering an unread item lowers the badge by one
+            const wasUnread = items.find((n) => n.id === id)?.read === false
+            if (wasUnread) setUnreadCount((c) => Math.max(0, c - 1))
 
             setItems((prev) =>
                 prev.map((n) => (n.id === id ? { ...n, status, read: true } : n))

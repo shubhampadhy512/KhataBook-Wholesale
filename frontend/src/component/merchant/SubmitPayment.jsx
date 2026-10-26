@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { Smartphone, Banknote, FileText, Landmark, Check, ChevronRight } from 'lucide-react';
-import '../cssfile/SubmitPayment.css';
+import { Smartphone, Banknote, Check, ChevronRight } from 'lucide-react';
+import './SubmitPayment.css';
 
 const METHODS = [
     { id: 'UPI', label: 'UPI', note: 'GPay, PhonePe, Paytm', Icon: Smartphone, ref: 'UPI ref / UTR number' },
     { id: 'Cash', label: 'Cash', note: 'Handed to the storeman', Icon: Banknote, ref: 'Receipt no. (if any)' },
-    { id: 'Cheque', label: 'Cheque', note: 'Cheque deposited', Icon: FileText, ref: 'Cheque number' },
-    { id: 'Bank transfer', label: 'Bank transfer', note: 'NEFT / IMPS / RTGS', Icon: Landmark, ref: 'Bank reference number' },
 ];
+
+const BACKEND = import.meta.env.VITE_BACKEND_URL;
+const ENDPOINT = "/submitpayment"; // change to your route (POST, JSON body, returns { message })
 
 const formatINR = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`;
 const today = () => new Date().toISOString().slice(0, 10);
@@ -17,15 +18,13 @@ const today = () => new Date().toISOString().slice(0, 10);
  *  balance   - outstanding balance (number)
  *  pending   - amount already pending verification (number)
  *  targets   - [{ value, label, amount }] for "Pay towards"
- *  onSubmit  - async (formData) => void   (throw an Error to show a message)
  */
 export default function SubmitPayment({
     balance = 0,
     pending = 0,
-    targets = [{ value: 'balance', label: 'Account balance', amount: balance }],
-    onSubmit,
+    targets = [],
 }) {
-    const [target, setTarget] = useState(targets[0]?.value ?? '');
+    const [target, setTarget] = useState(targets[0]?.value ?? 'balance');
     const [amount, setAmount] = useState('');
     const [date, setDate] = useState(today());
     const [method, setMethod] = useState('UPI');
@@ -48,21 +47,32 @@ export default function SubmitPayment({
         if (!(entered > 0)) return setError('Enter the amount you paid.');
         if (!reference.trim()) return setError('Add the transaction reference so the storeman can match it.');
 
-        const body = new FormData();
-        body.append('target', target);
-        body.append('amount', amount);
-        body.append('date', date);
-        body.append('method', method);
-        body.append('reference', reference.trim());
+        const body = {
+            target,
+            amount: Number(amount),
+            paymentMode: method,
+            date,
+            reference: reference.trim(),
+        };
 
         try {
             setBusy(true);
-            await onSubmit?.(body);
+            console.log(body)
+            const response = await fetch(BACKEND + ENDPOINT, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) throw new Error(data.message || 'Could not send the payment. Try again.');
+
             setDone(true);
             setAmount('');
             setReference('');
         } catch (err) {
-            setError(err.message || 'Could not send the payment. Try again.');
+            setError(err.message === 'Failed to fetch' ? "Can't reach the server. Please try again." : err.message);
         } finally {
             setBusy(false);
         }

@@ -52,16 +52,15 @@ const GetDashboardDetails = asyncHandler(async (req, res) => {
         }
 
         const storeman = await User.findById(balances.storemanID).select("username")
-        const merchant = await User.findById(_id).select("username")
         const payment = await Payment.find({
-            merchantId: _id
+            merchantId: _id,
         }).select("status createdAt notes amount paymentType")
 
         return res.status(200).json({
             message: 'Done',
             body: {
                 merchant: {
-                    name: merchant.username,
+                    name: username,
                     store: storeman.username
                 },
                 summary: {
@@ -116,14 +115,32 @@ const GetDashboardDetails = asyncHandler(async (req, res) => {
             }
         });
 
+        const approvedPayments = await Payment.find({
+            storemanId: _id,
+            status: "Approve",
+            createdAt: {
+                $gte: start,
+                $lt: end
+            }
+        });
+
         let credit = 0;
         let payments = 0;
-        count.map((user) => {
-            credit += user?.amount || 0,
-                payments += user.paidamount || 0
-        })
+
+        count.forEach((transaction) => {
+            if (transaction.type === "Purchase") {
+                credit += transaction.amount || 0;
+            }
+        });
+
+        approvedPayments.forEach((payment) => {
+            payments += payment.amount || 0;
+        });
+
         chart.push({
-            month: start.toLocaleString("en-IN", { month: "short" }),
+            month: start.toLocaleString("en-IN", {
+                month: "short"
+            }),
             year: start.getFullYear(),
             credit,
             payments

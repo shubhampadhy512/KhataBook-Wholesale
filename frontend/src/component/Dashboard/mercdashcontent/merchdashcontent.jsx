@@ -28,7 +28,7 @@ const STATUS = {
 /* Routes other than submit-payment are placeholders, so change them to your real ones */
 const QUICK_ACTIONS = [
     { to: '/merchant/submit-payment', label: 'Submit Payment', icon: Send },
-    { to: '/merchant/daily-history', label: 'View Ledger', icon: BookOpen },
+    { to: '/merchant/daily-history', label: 'History', icon: BookOpen },
     { to: '/merchant/chat', label: 'Open Chat', icon: MessageSquare },
     { to: '/merchant/store', label: 'My Store', icon: Store },
 ];

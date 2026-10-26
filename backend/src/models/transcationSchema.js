@@ -18,6 +18,10 @@ const TransactionSchema = new mongoose.Schema({
         enum: ["Purchase", "Payment"],
         required: true
     },
+    status: {
+        type: String,
+        enum: ['Pending', 'Approve', 'Reject']
+    },
 
     items: [
         {

@@ -12,10 +12,12 @@ const PaymentSchema = new mongoose.Schema({
     },
     transactionId: {
         type: String,
+        trim: true,
+        default: null
     },
     paymentType: {
         type: String,
-        enum: ['UPI', 'Cash', 'Bank Transfer'],
+        enum: ['UPI', 'Cash'],
         required: true,
         default: 'Cash'
     },

@@ -1,115 +1,19 @@
-/* ==========================================================
-   Customer Ledger : smooth, clean styling
-   ========================================================== */
-/* ---------- Merchant store card ---------- */
-.ledger-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
-    padding: 24px 30px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-}
-
-.ledger-card-left {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-}
-
-.ledger-avatar {
-    width: 58px;
-    height: 58px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #d1fae5;
-    color: #065f46;
-    font-size: 1.05rem;
-    font-weight: 700;
-}
-
-.ledger-store-info h3 {
-    margin: 0 0 3px;
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--text);
-}
-
-.ledger-store-info p {
-    margin: 0;
-    font-size: 0.95rem;
-    color: var(--muted);
-}
-
-.ledger-card-right {
-    display: flex;
-    gap: 46px;
-}
-
-.ledger-figure span {
-    display: block;
-    margin-bottom: 2px;
-    font-size: 0.95rem;
-    color: var(--muted);
-}
-
-.ledger-figure strong {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--text);
-}
-
-.ledger-figure strong.paid {
-    color: var(--green);
-}
-
-@media (max-width: 800px) {
-    .ledger-card {
-        padding: 20px;
-    }
-
-    .ledger-card-left {
-        flex-wrap: wrap;
-    }
-
-    .ledger-card-right {
-        width: 100%;
-        gap: 28px;
-    }
-}
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 .cl-page {
+    --ink: #17213b;
+    --text: #1b2338;
+    --muted: #667089;
+    --line: #e1e5ee;
     --bg: #f5f7fa;
-    --surface: #ffffff;
-    --border: #e5e8ee;
-    --border-strong: #d3d8e0;
-    --text: #0f172a;
-    --muted: #64748b;
-    --head-bg: #f1f4f8;
-    --accent: #1f7a5c;
-    --accent-soft: rgba(31, 122, 92, 0.14);
-    --red: #dc2626;
-    --green: #0f9d6b;
-    --ease: 0.2s ease;
+    --green: #0a9468;
+    --red: #d92d20;
+    --amber: #b7791f;
 
-    box-sizing: border-box;
-    min-height: 100%;
-    margin-top: -45px;
-    padding: 40px 40px 56px;
-    background: var(--bg);
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
     color: var(--text);
-    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    font-size: 15px;
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-    animation: cl-fade 0.35s ease both;
+    width: 100%;
+    max-width: 1200px;
 }
 
 .cl-page *,
@@ -118,381 +22,229 @@
     box-sizing: border-box;
 }
 
-.cl-page button,
-.cl-page input,
-.cl-page select {
+:where(.cl-page) input,
+:where(.cl-page) select,
+:where(.cl-page) button {
     font: inherit;
     color: inherit;
 }
 
-@keyframes cl-fade {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
-
-    to {
-        opacity: 1;
-        transform: none;
-    }
-}
-
-/* ---------- Heading (storeman) ---------- */
-.cl-title {
-    margin: 0 0 6px;
-    font-size: 30px;
-    font-weight: 700;
-    letter-spacing: -0.025em;
-    line-height: 1.2;
-}
-
-.cl-subtitle {
-    margin: 0 0 28px;
-    color: var(--muted);
-}
-
-/* ---------- Heading (merchant: "My Ledger") ---------- */
+/* ---------- Title banner (both roles) ---------- */
 .ledger-header {
-    margin-bottom: 28px;
+    background: var(--ink);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 18px;
 }
 
 .ledger-header h1 {
     margin: 0 0 6px;
-    font-size: 30px;
+    font-size: 1.8rem;
     font-weight: 700;
-    letter-spacing: -0.025em;
-    line-height: 1.2;
-    color: var(--text);
+    letter-spacing: -0.01em;
+    color: #fff;
 }
 
 .ledger-header p {
     margin: 0;
-    color: var(--muted);
+    font-size: 0.95rem;
+    color: #b9c3de;
 }
 
-/* ---------- Card ---------- */
-.cl-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.04);
-    overflow: hidden;
-}
-
-/* ---------- Merchant balances section (storeman) ---------- */
-.cl-bal {
-    margin-bottom: 24px;
-}
-
-.cl-bal-head {
+/* ---------- Merchant summary card ---------- */
+.ledger-card {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-    padding: 20px 24px;
+    gap: 18px;
+    padding: 18px 22px;
+    margin-bottom: 18px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
 }
 
-.cl-bal-head h2 {
-    margin: 0 0 2px;
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+.ledger-card-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
 }
 
-.cl-bal-head p {
-    margin: 0;
-    font-size: 14px;
-    color: var(--muted);
-}
-
-.cl-bal-total {
-    text-align: right;
-}
-
-.cl-bal-total span {
-    display: block;
-    font-size: 13px;
-    color: var(--muted);
-}
-
-.cl-bal-total strong {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--red);
-    font-variant-numeric: tabular-nums;
-}
-
-/* scrolls when there are many merchants */
-.cl-bal-list {
+.ledger-avatar {
+    width: 48px;
+    height: 48px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 12px;
-    max-height: 280px;
-    overflow-y: auto;
-    padding: 16px 24px 24px;
-    border-top: 1px solid var(--border);
-}
-
-.cl-bal-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    padding: 12px 14px;
-    text-align: left;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    cursor: pointer;
-    transition: border-color var(--ease), box-shadow var(--ease), background-color var(--ease);
-}
-
-.cl-bal-item:hover {
-    border-color: var(--border-strong);
-    background: #f9fafc;
-}
-
-.cl-bal-item:focus-visible {
-    outline: 0;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 4px var(--accent-soft);
-}
-
-.cl-bal-item.active {
-    border-color: var(--accent);
-    background: var(--accent-soft);
-}
-
-.cl-bal-avatar {
-    flex: none;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: #d1fae5;
-    color: #065f46;
-    font-size: 0.85rem;
+    place-items: center;
     font-weight: 700;
+    color: var(--green);
+    background: #d9f3e8;
+    border-radius: 50%;
 }
 
-.cl-bal-info {
-    flex: 1;
-    min-width: 0;
+.ledger-store-info h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.ledger-card-right {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 14px;
 }
 
-.cl-bal-info strong {
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.ledger-figure {
+    min-width: 130px;
+    padding: 10px 16px;
+    background: var(--bg);
+    border-radius: 12px;
 }
 
-.cl-bal-info small {
-    font-size: 13px;
+.ledger-figure span {
+    display: block;
+    font-size: 0.8rem;
     color: var(--muted);
 }
 
-.cl-bal-amount {
-    flex: none;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
+.ledger-figure strong {
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+.ledger-figure strong.paid {
     color: var(--green);
 }
 
-.cl-bal-amount.due {
-    color: var(--red);
+/* ---------- Table card ---------- */
+.cl-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
 }
 
-/* ---------- Filters ---------- */
 .cl-filters {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 12px;
-    padding: 18px 20px;
+    gap: 10px;
+    padding: 14px;
+    border-bottom: 1px solid var(--line);
 }
 
 .cl-select,
-.cl-search,
 .cl-date {
-    height: 46px;
-    background-color: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    transition: border-color var(--ease), box-shadow var(--ease), background-color var(--ease);
+    padding: 11px 12px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
 }
 
-.cl-select:hover,
-.cl-search:hover,
-.cl-date:hover {
-    border-color: var(--border-strong);
-}
-
-.cl-select:focus,
-.cl-date:focus,
-.cl-search:focus-within {
-    outline: 0;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 4px var(--accent-soft);
-}
-
-/* dropdown with a custom arrow (merchants for storeman, credit/payment for merchant) */
-.cl-select {
-    flex: 1.4;
-    min-width: 0;
-    padding: 0 40px 0 16px;
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
-}
-
-/* search box */
 .cl-search {
-    flex: 1.6;
-    min-width: 0;
+    flex: 1;
+    min-width: 220px;
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 0 16px;
+    padding: 0 14px;
     color: var(--muted);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+}
+
+.cl-search:focus-within,
+.cl-select:focus,
+.cl-date:focus {
+    outline: 0;
+    border-color: var(--ink);
 }
 
 .cl-search input {
     flex: 1;
     min-width: 0;
-    height: 100%;
+    padding: 11px 0;
     border: 0;
     outline: 0;
-    background: transparent;
-    color: var(--text);
-}
-
-.cl-search input::placeholder {
-    color: #94a3b8;
-}
-
-/* date pickers */
-.cl-date {
-    flex: 1;
-    min-width: 0;
-    padding: 0 12px;
-    color-scheme: light;
-    cursor: pointer;
-}
-
-.cl-date::-webkit-calendar-picker-indicator {
-    cursor: pointer;
-    opacity: 0.55;
-    transition: opacity var(--ease);
-}
-
-.cl-date::-webkit-calendar-picker-indicator:hover {
-    opacity: 1;
-}
-
-/* clear button */
-.cl-clear {
-    height: 46px;
-    padding: 0 18px;
-    font-weight: 500;
     background: none;
-    border: 0;
-    border-radius: 12px;
-    color: var(--muted);
+}
+
+.cl-clear {
+    padding: 11px 16px;
+    font-weight: 600;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
     cursor: pointer;
-    transition: background-color var(--ease), color var(--ease);
 }
 
 .cl-clear:hover {
-    background: var(--head-bg);
-    color: var(--text);
+    background: var(--bg);
 }
 
-.cl-clear:focus-visible {
-    outline: 0;
-    box-shadow: 0 0 0 4px var(--accent-soft);
-}
-
-/* ---------- Table ---------- */
 .cl-table-wrap {
     overflow-x: auto;
-    border-top: 1px solid var(--border);
-    scroll-behavior: smooth;
 }
 
 .cl-table {
     width: 100%;
-    min-width: 860px;
-    /* was 980px: merchants have one column fewer */
-    border-collapse: separate;
-    border-spacing: 0;
+    border-collapse: collapse;
+    min-width: 760px;
 }
 
 .cl-table th {
-    padding: 14px 20px;
+    padding: 12px 16px;
     text-align: left;
-    font-size: 12px;
+    font-size: 0.82rem;
     font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
     color: var(--muted);
-    background: var(--head-bg);
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
     white-space: nowrap;
 }
 
 .cl-table td {
-    padding: 18px 20px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: middle;
-    transition: background-color var(--ease);
+    padding: 14px 16px;
+    font-size: 0.92rem;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
 }
 
 .cl-table tbody tr:last-child td {
     border-bottom: 0;
 }
 
-.cl-table tbody tr:hover td {
-    background: #f9fafc;
-}
-
 .cl-right {
     text-align: right !important;
-    font-variant-numeric: tabular-nums;
 }
 
 .cl-muted {
     color: var(--muted);
+    white-space: nowrap;
 }
 
 .cl-sub {
     margin-top: 2px;
-    font-size: 13px;
+    font-size: 0.8rem;
     color: var(--muted);
 }
 
 .cl-credit {
-    color: var(--red);
     font-weight: 600;
+    color: var(--red);
 }
 
 .cl-payment {
-    color: var(--green);
     font-weight: 600;
+    color: var(--green);
 }
 
 .cl-balance {
-    font-weight: 700;
+    font-weight: 800;
 }
 
 .cl-empty {
-    padding: 56px 20px !important;
+    padding: 40px 16px !important;
     text-align: center;
     color: var(--muted);
 }
@@ -501,97 +253,58 @@
 .cl-pill {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    padding: 4px 12px;
-    font-size: 13px;
+    gap: 6px;
+    padding: 4px 11px;
+    font-size: 0.8rem;
     font-weight: 600;
-    line-height: 1.4;
-    white-space: nowrap;
-    border: 1px solid transparent;
     border-radius: 999px;
+    white-space: nowrap;
 }
 
 .cl-pill i {
-    width: 7px;
-    height: 7px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     background: currentColor;
 }
 
 .cl-pill-pending {
-    background: #fff7e0;
-    border-color: #f6e2a3;
-    color: #a36a00;
+    color: var(--amber);
+    background: #fff4dc;
 }
 
 .cl-pill-overdue {
-    background: #fdecec;
-    border-color: #f6c7c7;
-    color: #c42222;
+    color: #b3321f;
+    background: #fbe8e4;
+}
+
+.cl-pill-rejected {
+    color: #b3321f;
+    background: #fbe8e4;
+}
+
+.cl-struck {
+    color: var(--muted);
+    text-decoration: line-through;
+    font-weight: 500;
 }
 
 .cl-pill-done {
-    background: #e6f6ec;
-    color: #1a7f3c;
+    color: var(--green);
+    background: #e3f4ea;
 }
 
-.cl-pill-done i {
-    background: #1a7f3c;
-}
-
-/* ---------- Tablet ---------- */
-@media (max-width: 900px) {
-    .cl-page {
-        padding: 28px 16px 40px;
+@media (max-width: 720px) {
+    .ledger-header {
+        padding: 20px;
     }
 
-    .cl-title,
-    .ledger-header h1 {
-        font-size: 26px;
+    .ledger-card-right {
+        width: 100%;
     }
 
-    .cl-bal-head {
-        padding: 16px;
-    }
-
-    .cl-bal-list {
-        padding: 12px 16px 16px;
-        grid-template-columns: 1fr;
-    }
-
-    .cl-bal-total {
-        text-align: left;
-    }
-
-    .cl-filters {
-        flex-wrap: wrap;
-    }
-
-    .cl-select,
-    .cl-search {
-        flex: 1 1 100%;
-    }
-
-    .cl-date {
-        flex: 1 1 calc(50% - 6px);
-    }
-
-    .cl-clear {
-        margin-left: auto;
-    }
-}
-
-/* ---------- Respect reduced motion ---------- */
-@media (prefers-reduced-motion: reduce) {
-    .cl-page {
-        animation: none;
-    }
-
-    .cl-page * {
-        transition: none !important;
-    }
-
-    .cl-table-wrap {
-        scroll-behavior: auto;
+    .ledger-figure {
+        flex: 1;
+        min-width: 0;
     }
 }

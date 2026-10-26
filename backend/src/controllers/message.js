@@ -83,14 +83,18 @@ const Listofmessage = asyncHandler(async (req, res) => {
             message: "Unauthorized"
         });
     }
-
-    const notifications = await Notification.find({
+    const lengthunread = await Notification.find({
         receiverId: user_id,
         isRead: false
     }).sort({ createdAt: -1 });
 
+    const notifications = await Notification.find({
+        receiverId: user_id,
+    }).sort({ createdAt: -1 });
+
     return res.status(200).json({
         info: notifications,
+        unreadmessagelength: lengthunread.length,
         message: "All unread notifications"
     });
 });
@@ -191,7 +195,7 @@ const NormalMessageSeen = asyncHandler(async (req, res) => {
     await Notification.updateMany(
         {
             receiverId: _id,
-            type: 'Normal',
+            type: { $in: ['Normal', 'Payment'] },
             isRead: false
         },
         {

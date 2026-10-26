@@ -13,9 +13,9 @@ const { registerUser,
 
 const { InvitationSend, Listofmessage, UpdateMessage, NormalMessageSeen } = require("../controllers/message.js")
 const { AddTransaction, GetdailyTranscation, GetmerchantTransaction } = require('../controllers/transaction.js')
-const { AddPayment, GetPaymentHistory } = require("../controllers/payment.js")
+const { AddPayment, GetPaymentHistory, SubmitPayment, getPendingPayment, HandlePayment } = require("../controllers/payment.js")
 const VerifyUser = require("../middlewar/authVerifiy.js")
-const {GetDashboardDetails} = require("../controllers/dashboarddeatils.js")
+const { GetDashboardDetails } = require("../controllers/dashboarddeatils.js")
 
 router.route("/register").post(registerUser)
 
@@ -64,7 +64,13 @@ router.route("/getpayment").get(VerifyUser, GetPaymentHistory)
 
 router.route("/addpayment").post(VerifyUser, AddPayment)
 
+router.route("/submitpayment").post(VerifyUser, SubmitPayment)
+
 router.route("/getmerchantbalance").get(VerifyUser, GetmerchantTransaction)
+
+router.route("/pendingpayments").get(VerifyUser, getPendingPayment)
+
+router.route("/verfiypayment").post(VerifyUser, HandlePayment)
 
 //dashboardetails
 

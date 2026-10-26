@@ -33,6 +33,19 @@ const statusOf = (dueDate) => {
     return dueDate < toLocalISO(new Date()) ? "overdue" : "pending";
 };
 
+// Payment status from the backend: "Pending" | "Approve" | "Reject"
+// -> { key: pill colour class, label: text shown, rejected: true/false }
+const paymentStatusOf = (raw) => {
+    const s = String(raw || "").toLowerCase();
+    if (s.startsWith("reject") || s.startsWith("declin") || s === "failed" || s === "cancelled") {
+        return { key: "rejected", label: "Rejected", rejected: true };
+    }
+    if (s.startsWith("approv") || s === "verified" || s === "confirmed") {
+        return { key: "done", label: "Approved", rejected: false };
+    }
+    return { key: "pending", label: "Pending", rejected: false };
+};
+
 // finds the paid amount anywhere inside an entry
 const findPaid = (obj, depth = 0) => {
     if (!obj || typeof obj !== "object" || depth > 4) return undefined;
@@ -49,7 +62,6 @@ const findPaid = (obj, depth = 0) => {
 };
 
 // One backend entry -> one table row
-// One backend entry -> one table row
 const toRow = (e) => {
     const dueDate = toLocalISO(e.duedate);
     const isPurchase = e.type === "Purchase";
@@ -57,10 +69,14 @@ const toRow = (e) => {
     const paidRaw = findPaid(e);
     const paidNow = Number(String(paidRaw ?? "").replace(/,/g, "")) || 0;
 
+    // payment status (a rejected payment is not added to paid)
+    const pay = isPurchase ? null : paymentStatusOf(e.status);
+
     // purchase: bill adds to credit, amount paid while taking goods counts as paid
-    // payment : the whole amount counts as paid
+    // payment : the whole amount counts as paid, unless it was rejected
+    const attempted = paidNow || Number(e.amount) || 0;
     const rowCredit = isPurchase ? Number(e.amount) || 0 : 0;
-    const rowPaid = isPurchase ? paidNow : paidNow || Number(e.amount) || 0;
+    const rowPaid = isPurchase ? paidNow : pay.rejected ? 0 : attempted;
 
     // text shown in the Description column
     let title = "";
@@ -71,7 +87,7 @@ const toRow = (e) => {
         sub = e.items?.length ? `${e.items.length} item${e.items.length === 1 ? "" : "s"}` : "";
     } else {
         title = e.paymentMode ? `Payment · ${e.paymentMode}` : "Payment";
-        sub = `Paid ${inr(rowPaid)}${e.description ? " · " + e.description : ""}`;
+        sub = `${pay.rejected ? "Rejected" : "Paid"} ${inr(attempted)}${e.description ? " · " + e.description : ""}`;
     }
 
     return {
@@ -85,8 +101,12 @@ const toRow = (e) => {
         type: isPurchase ? "credit" : "payment",
         rowCredit,
         rowPaid,
+        attempted,
+        rejected: !isPurchase && pay.rejected,
         dueDate,
-        status: isPurchase ? statusOf(dueDate) : "",
+        // purchase: due-date logic (unchanged), payment: status from the backend
+        status: isPurchase ? statusOf(dueDate) : pay.key,
+        statusLabel: isPurchase ? "" : pay.label,
     };
 };
 
@@ -140,7 +160,6 @@ export default function DailyHistory() {
                     credentials: "include",
                 });
                 const data = await response.json();
-                console.log(data);
 
                 if (!response.ok) {
                     setError(data.message || "Could not load the ledger.");
@@ -200,7 +219,7 @@ export default function DailyHistory() {
 
     return (
         <div className="cl-page">
-            {/* Header changes with the role */}
+            {/* Header changes with the role (both use the same dark blue banner) */}
             {role === "merchant" && (
                 <>
                     <div className="ledger-header">
@@ -238,12 +257,10 @@ export default function DailyHistory() {
             )}
 
             {role === "storeman" && (
-                <>
-                    <h1 className="cl-title">Customer Ledger</h1>
-                    <p className="cl-subtitle">
-                        Credits, payments and running balances. Only verified payments appear here.
-                    </p>
-                </>
+                <div className="ledger-header">
+                    <h1>Customer Ledger</h1>
+                    <p>Credits, payments and running balances. Only verified payments appear here.</p>
+                </div>
             )}
 
             <div className="cl-card">
@@ -314,14 +331,22 @@ export default function DailyHistory() {
                                     </td>
                                     <td className="cl-right cl-credit">{e.type === "credit" ? inr(e.rowCredit) : ""}</td>
                                     <td className="cl-right cl-payment">
-                                        {e.rowPaid > 0 ? inr(e.rowPaid) : e.type === "credit" ? "-" : ""}
+                                        {e.rejected ? (
+                                            <span className="cl-struck">{inr(e.attempted)}</span>
+                                        ) : e.rowPaid > 0 ? (
+                                            inr(e.rowPaid)
+                                        ) : e.type === "credit" ? (
+                                            "-"
+                                        ) : (
+                                            ""
+                                        )}
                                     </td>
                                     <td className="cl-right cl-balance">{inr(e.balance)}</td>
                                     <td className="cl-muted">{fmtDate(e.dueDate)}</td>
                                     <td>
                                         {e.status && (
                                             <span className={`cl-pill cl-pill-${e.status}`}>
-                                                <i /> {cap(e.status)}
+                                                <i /> {e.statusLabel || cap(e.status)}
                                             </span>
                                         )}
                                     </td>

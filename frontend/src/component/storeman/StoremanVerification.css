@@ -1,0 +1,345 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+.sv-page {
+    --ink: #17213b;
+    --text: #1b2338;
+    --muted: #667089;
+    --line: #e1e5ee;
+    --bg: #f5f7fa;
+    --yes: #0a9468;
+    --no: #e11d1d;
+    --wait: #e8560f;
+    --wait-bg: #fff1ea;
+    --good-bg: #e3f4ea;
+    --bad-bg: #fbe8e4;
+
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color: var(--text);
+    max-width: 1200px;
+    width: 100%;
+}
+
+.sv-page *,
+.sv-page *::before,
+.sv-page *::after {
+    box-sizing: border-box;
+}
+
+/* ---------- Title banner ---------- */
+.sv-head {
+    background: var(--ink);
+    color: #fff;
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 18px;
+}
+
+.sv-head h1 {
+    margin: 0 0 6px;
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.sv-head p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #b9c3de;
+}
+
+/* ---------- Tabs + search ---------- */
+.sv-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: center;
+    padding: 14px;
+    margin-bottom: 18px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+}
+
+.sv-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 5px;
+    background: #eef1f6;
+    border-radius: 12px;
+}
+
+.sv-tab {
+    font: inherit;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    border-radius: 9px;
+    padding: 8px 14px;
+    cursor: pointer;
+}
+
+.sv-tab span {
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-left: 3px;
+    opacity: 0.7;
+}
+
+.sv-tab.is-on {
+    color: var(--text);
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(23, 33, 59, 0.12);
+}
+
+.sv-search {
+    flex: 1;
+    min-width: 240px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    color: var(--muted);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+}
+
+.sv-search input {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 0;
+    font: inherit;
+    font-size: 0.92rem;
+    color: var(--text);
+    background: none;
+    border: 0;
+    outline: 0;
+}
+
+.sv-search:focus-within {
+    border-color: var(--ink);
+}
+
+.sv-error {
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #b3321f;
+    background: var(--bad-bg);
+    border-radius: 12px;
+}
+
+.sv-empty {
+    padding: 40px 16px;
+    text-align: center;
+    color: var(--muted);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+}
+
+/* ---------- Card ---------- */
+.sv-card {
+    margin-bottom: 16px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-left: 5px solid var(--wait);
+    border-radius: 16px;
+}
+
+.sv-card.is-verified {
+    border-left-color: var(--yes);
+}
+
+.sv-card.is-rejected {
+    border-left-color: var(--no);
+}
+
+.sv-main {
+    display: flex;
+    gap: 14px;
+    padding: 20px 22px;
+}
+
+.sv-avatar {
+    flex: none;
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--yes);
+    background: #d9f3e8;
+    border-radius: 50%;
+}
+
+.sv-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.sv-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.sv-title strong {
+    font-size: 1.1rem;
+}
+
+.sv-code {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.72rem;
+    padding: 4px 8px;
+    color: var(--muted);
+    background: #eef1f6;
+    border-radius: 6px;
+}
+
+.sv-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 4px 11px;
+    border-radius: 999px;
+    color: var(--wait);
+    background: var(--wait-bg);
+    border: 1px solid #f7c9b3;
+}
+
+.sv-pill i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.sv-pill.is-verified {
+    color: var(--yes);
+    background: var(--good-bg);
+    border-color: #b5e3c9;
+}
+
+.sv-pill.is-rejected {
+    color: #b3321f;
+    background: var(--bad-bg);
+    border-color: #f1c1b9;
+}
+
+.sv-grid {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px 24px;
+}
+
+.sv-grid dt {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.sv-grid dd {
+    margin: 2px 0 0;
+    font-size: 0.98rem;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+
+.sv-amount {
+    font-size: 1.2rem !important;
+    font-weight: 800 !important;
+}
+
+.sv-mono {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.88rem !important;
+}
+
+/* ---------- Footer actions ---------- */
+.sv-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 22px;
+    color: var(--muted);
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+}
+
+.sv-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.sv-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+    border: 0;
+    border-radius: 10px;
+    padding: 12px 18px;
+    cursor: pointer;
+}
+
+.sv-btn.is-yes {
+    background: var(--yes);
+}
+
+.sv-btn.is-no {
+    background: var(--no);
+}
+
+.sv-btn:hover:not(:disabled) {
+    filter: brightness(0.92);
+}
+
+.sv-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.sv-page button:focus-visible {
+    outline: 3px solid #f4b63a;
+    outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+    .sv-head {
+        padding: 20px;
+    }
+
+    .sv-main {
+        padding: 16px;
+    }
+
+    .sv-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sv-foot {
+        padding: 14px 16px;
+    }
+
+    .sv-actions,
+    .sv-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

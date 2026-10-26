@@ -22,6 +22,9 @@ const CATALOGUE = [
 const CATEGORIES = ["All", ...new Set(CATALOGUE.map((p) => p.category))];
 const UNITS = ["kg", "litre", "packet", "bag", "piece", "box"];
 
+// Quick notes: click one and it is added to the Notes box
+const QUICK_NOTES = ["Paid in cash", "Paid by UPI", "Pay on due date", "Urgent delivery", "Bulk order"];
+
 /* ---------- Small helpers ---------- */
 const cap = (text) => (text ? text.charAt(0).toUpperCase() + text.slice(1) : "-");
 const inr = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
@@ -170,11 +173,18 @@ export default function AddHistory() {
         setCustomOpen(true);
     };
 
+    // quick note button: add its text to the Notes box (no repeats)
+    const addQuickNote = (text) =>
+        setNotes((prev) => {
+            if (prev.split(", ").includes(text)) return prev;
+            return prev.trim() ? `${prev.trim()}, ${text}` : text;
+        });
+
     /* ---------- Save ---------- */
     const handleSave = async () => {
         if (saving) return;
 
-        // checks
+        // checks (the "paid more than total" check is done by the backend)
         if (!merchant) return setError("Select a merchant first.");
         if (items.length === 0) return setError("Add at least one item to the list.");
 
@@ -183,7 +193,6 @@ export default function AddHistory() {
 
         if (!entryDate) return setError("Enter a valid entry date.");
         if (Number(paid) < 0) return setError("Paid amount can't be negative.");
-        if (Number(paid) > total) return setError("Paid amount can't be more than the total credit amount.");
 
         // data sent to the backend
         const payload = {
@@ -202,8 +211,7 @@ export default function AddHistory() {
         setError("");
         setSaving(true);
         try {
-            console.log(payload)
-            const response = await fetch(`${BACKEND}/addtransactionpurchase`, {   // change to your save route
+            const response = await fetch(`${BACKEND}/addtransactionpurchase`, { // change to your save route
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
@@ -233,8 +241,10 @@ export default function AddHistory() {
     /* ---------- Screen ---------- */
     return (
         <div className="ce-page">
-            <h1 className="ce-title">Add Credit Entry</h1>
-            <p className="ce-subtitle">Pick a merchant, add the groceries supplied, and the total is calculated for you.</p>
+            <header className="ce-head">
+                <h1 className="ce-title">Add Credit Entry</h1>
+                <p className="ce-subtitle">Pick a merchant, add the groceries supplied, and the total is calculated for you.</p>
+            </header>
 
             {/* 1. Merchant selector */}
             <div className="ce-card ce-merchant">
@@ -431,6 +441,14 @@ export default function AddHistory() {
                                 placeholder="Optional notes"
                             />
                         </label>
+
+                        <div className="ce-quick-notes">
+                            {QUICK_NOTES.map((n) => (
+                                <button key={n} type="button" className="ce-quick-note" onClick={() => addQuickNote(n)}>
+                                    {n}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     <div className="ce-total">

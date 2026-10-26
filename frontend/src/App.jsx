@@ -2,7 +2,6 @@
 import { Routes, Route } from 'react-router-dom'
 import {
   Login,
-  MerchantLedger,
   MerchantDashboard,
   StoremanDashboard,
   MerchantPayments,
@@ -12,7 +11,8 @@ import {
   MerchantsDetails,
   DailyHistory,
   RecordPayment,
-  MerchantBalances
+  MerchantBalances,
+  StoremanVerification
 } from './FileAddresses.jsx';
 import DashboardLayout from './component/Dashboard/Dashboard.jsx'
 
@@ -25,7 +25,6 @@ function App() {
 
         {/* merchant pages */}
         <Route path="/merchant/dashboard" element={<MerchantDashboard />} />
-        <Route path="/merchant/ledger" element={<MerchantLedger />} />
         <Route path="/merchant/payments" element={<MerchantPayments />} />
         <Route path="/merchant/submit-payment" element={<MerchantSubmitPayment />} />
         <Route path="/merchant/daily-history" element={<DailyHistory />} />
@@ -37,6 +36,7 @@ function App() {
         <Route path="/storeman/daily-history" element={<DailyHistory />} />
         <Route path="/storeman/addrecord-payment" element={<RecordPayment />} />
         <Route path="/storeman/merchantbalances" element={<MerchantBalances />} />
+        <Route path="/storeman/verifypayment" element={<StoremanVerification />} />
       </Route>
     </Routes>
   )
