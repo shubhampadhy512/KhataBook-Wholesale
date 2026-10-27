@@ -38,7 +38,7 @@ const MENUS = {
       { to: '/storeman/addrecord-payment', label: 'Record Payment', icon: Wallet },
       { to: '/storeman/verifypayment', label: 'Payment Verification', icon: ShieldCheck },
       { to: '/storeman/merchantbalances', label: 'Balances', icon: MessageSquare, badgeKey: 'balances' },
-      { to: '/storeman/dues', label: 'Outstanding Dues', icon: Clock },
+      { to: '/storeman/product', label: 'Outstanding Dues', icon: Clock },
       { to: '/storeman/reports', label: 'Reports', icon: BarChart3 },
     ],
   },

@@ -13,7 +13,8 @@ import {
   RecordPayment,
   MerchantBalances,
   StoremanVerification,
-  StoreDetails
+  StoreDetails,
+  ProductManager
 } from './FileAddresses.jsx';
 import DashboardLayout from './component/Dashboard/Dashboard.jsx'
 
@@ -39,6 +40,7 @@ function App() {
         <Route path="/storeman/addrecord-payment" element={<RecordPayment />} />
         <Route path="/storeman/merchantbalances" element={<MerchantBalances />} />
         <Route path="/storeman/verifypayment" element={<StoremanVerification />} />
+        <Route path="/storeman/product" element={<ProductManager />} />
       </Route>
     </Routes>
   )

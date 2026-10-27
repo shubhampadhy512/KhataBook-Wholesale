@@ -7,8 +7,8 @@ import {
     Users,
     UserPlus,
     PlusCircle,
+    ShieldCheck,
     Wallet,
-    MessageSquare,
 } from 'lucide-react';
 import './StoremanDashboard.css';
 
@@ -16,9 +16,9 @@ const API = import.meta.env.VITE_BACKEND_URL;
 
 const QUICK_ACTIONS = [
     { to: '/storeman/merchants', label: 'Add Merchant', icon: UserPlus },
-    { to: '/storeman/add-credit', label: 'Record Credit', icon: PlusCircle },
-    { to: '/storeman/record-payment', label: 'Record Payment', icon: Wallet },
-    { to: '/storeman/chat', label: 'Open Chat', icon: MessageSquare },
+    { to: '/storeman/addhistory', label: 'Record Credit', icon: PlusCircle },
+    { to: '/storeman/merchantbalances', label: 'Balances', icon: Wallet, badgeKey: 'balances' },
+    { to: '/storeman/verifypayment', label: 'Payment Verification', icon: ShieldCheck },
 ];
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];

@@ -19,6 +19,7 @@ import RecordPayment from "./component/storeman/recordPayment.jsx"
 import MerchantBalances from "./component/storeman/merchantbalances.jsx"
 import StoremanVerification from "./component/storeman/verifyPayment.jsx"
 import StoreDetails from "./component/merchant/mystore.jsx"
+import ProductManager from "./component/storeman/Product.jsx"
 
 export {
     Navbar,
@@ -39,5 +40,6 @@ export {
     RecordPayment,
     MerchantBalances,
     StoremanVerification,
-    StoreDetails
+    StoreDetails,
+    ProductManager
 };

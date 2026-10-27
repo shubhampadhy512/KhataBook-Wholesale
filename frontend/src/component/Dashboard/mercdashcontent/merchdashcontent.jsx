@@ -6,7 +6,7 @@ import {
     IndianRupee,
     TrendingDown,
     BookOpen,
-    MessageSquare,
+    CreditCard,
     Store,
 } from 'lucide-react';
 import './MerchantDashboard.css';
@@ -29,7 +29,7 @@ const STATUS = {
 const QUICK_ACTIONS = [
     { to: '/merchant/submit-payment', label: 'Submit Payment', icon: Send },
     { to: '/merchant/daily-history', label: 'History', icon: BookOpen },
-    { to: '/merchant/chat', label: 'Open Chat', icon: MessageSquare },
+    { to: '/merchant/payments', label: 'My Payments', icon: CreditCard },
     { to: '/merchant/Mystore', label: 'My Store', icon: Store },
 ];
 

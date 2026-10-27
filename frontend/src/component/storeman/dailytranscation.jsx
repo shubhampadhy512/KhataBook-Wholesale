@@ -224,7 +224,7 @@ export default function DailyHistory() {
             {role === "merchant" && (
                 <>
                     <div className="ledger-header">
-                        <h1>My Ledger</h1>
+                        <h1>My  History</h1>
                         <p>Your credits, confirmed payments and running balance.</p>
                     </div>
 

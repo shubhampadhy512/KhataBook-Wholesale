@@ -433,12 +433,12 @@ export default function AddHistory() {
                         </label>
 
                         <label>
-                            <span className="ce-label-sm">Notes (optional)</span>
+                            <span className="ce-label-sm">Notes </span>
                             <textarea
                                 rows={2}
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
-                                placeholder="Optional notes"
+                                placeholder="Notes"
                             />
                         </label>
 

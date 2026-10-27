@@ -215,7 +215,7 @@ const getPendingPayment = asyncHandler(async (req, res) => {
 const HandlePayment = asyncHandler(async (req, res) => {
     const { id, status } = req.body;
     const storemanId = req.user._id;
-    const username = req.user.username;
+    const storename = req.user.storename;
 
     const inr = (amount) => {
         return new Intl.NumberFormat('en-IN', {
@@ -268,7 +268,7 @@ const HandlePayment = asyncHandler(async (req, res) => {
     }
 
     const displayName =
-        username.charAt(0).toUpperCase() + username.slice(1);
+        storename.charAt(0).toUpperCase() + storename.slice(1);
 
     if (status === "rejected") {
         detailsPayment.status = "Reject";
@@ -279,7 +279,7 @@ const HandlePayment = asyncHandler(async (req, res) => {
 
         await Notification.create({
             senderId: storemanId,
-            sendername: username,
+            sendername: storename,
             receiverId: detailsPayment.merchantId,
             message: `Your payment of ${inr(detailsPayment.amount)} was rejected by ${displayName}`,
             type: "Normal"
@@ -313,7 +313,7 @@ const HandlePayment = asyncHandler(async (req, res) => {
 
     await Notification.create({
         senderId: storemanId,
-        sendername: username,
+        sendername: storename,
         receiverId: detailsPayment.merchantId,
         message: `Your payment of ${inr(detailsPayment.amount)} was approved by ${displayName}`,
         type: "Normal"

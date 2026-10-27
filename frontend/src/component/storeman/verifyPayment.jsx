@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Search, CheckCircle2, XCircle } from "lucide-react";
 import "./StoremanVerification.css";
+import { showSuccessToast } from '../toastMessage/SuccessToast.jsx'
+import { toast } from "react-toastify";
+import ErrorToastMessage from "../toastMessage/errormessage.jsx";
+
+const showErrorToast = (message, options = {}) => toast.error(message, options);
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL;
 const LIST_ENDPOINT = "/pendingpayments"; // GET  -> { message, body: [...] }
@@ -56,12 +61,10 @@ export default function StoremanVerification() {
                 const response = await fetch(BACKEND + LIST_ENDPOINT, { method: "GET", credentials: "include" });
                 const data = await response.json();
 
-                console.log(data)
                 if (!response.ok) {
                     setError(data.message || "Could not load payments.");
                     return;
                 }
-
                 const real = (data.body || []).filter((p) => p._id);
                 real.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                 setItems(real.map(toCard));
@@ -93,7 +96,16 @@ export default function StoremanVerification() {
                 setError(data.message || "Could not update this payment.");
                 return;
             }
+            if (data.status === "verified") {
+                showSuccessToast("Payment Transaction is Approved", { icon: <CheckCircle2 color="green" size={24} /> })
+            }
 
+            if (data.status === 'rejected') {
+                showErrorToast("Payment Transaction is Rejected", {
+                    icon: <XCircle size={20} color="red" />,
+                });
+            }
+            console.log(data)
             setItems((list) => list.map((c) => (c.id === id ? { ...c, group: groupOf(status) } : c)));
         } catch (err) {
             console.log("error in verify payment:", err.message);
@@ -117,6 +129,7 @@ export default function StoremanVerification() {
 
     return (
         <div className="sv-page">
+            <ErrorToastMessage />
             <header className="sv-head">
                 <h1>Payment Verification</h1>
                 <p>Approve or reject payments submitted by merchants. Only approved payments reduce the balance.</p>

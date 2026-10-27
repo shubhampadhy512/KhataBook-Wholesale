@@ -115,18 +115,7 @@ export default function SubmitPayment({
                             onChange={(e) => setAmount(e.target.value)}
                         />
                     </div>
-
-                    <div className="pay-due">
-                        <span>
-                            You owe <strong>{formatINR(due)}</strong>
-                        </span>
-                        {due > 0 && (
-                            <button type="button" className="pay-fill" onClick={() => setAmount(String(due))}>
-                                Pay full amount
-                            </button>
-                        )}
-                    </div>
-                    {pending > 0 && <p className="pay-pending">{formatINR(pending)} is waiting for approval</p>}
+                    {/* {pending > 0 && <p className="pay-pending">{formatINR(pending)} is waiting for approval</p>} */}
                 </section>
 
                 <section className="pay-sheet">
