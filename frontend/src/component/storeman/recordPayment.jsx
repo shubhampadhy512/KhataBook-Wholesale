@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Info, Wallet, CheckCircle2, Plus, X } from "lucide-react";
+import { Info, Wallet, CheckCircle2, Plus, X, XCircle } from "lucide-react";
 import "./recordPayment.css";
+import { toast } from "react-toastify";
+import ErrorToastMessage from "../toastMessage/errormessage.jsx";
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL;
-
+const showErrorToast = (message, options = {}) => toast.error(message, options);
 const METHODS = ["Cash", "UPI", "Bank Transfer"];
 
 const QUICK_NOTES = [
@@ -34,21 +36,30 @@ const initials = (name = "") =>
         .map((w) => w[0].toUpperCase())
         .join("") || "?";
 
+// Backend status: "Pending" | "Approve" | "Reject" -> pill colour + label
+const statusOf = (raw) => {
+    const s = String(raw || "").toLowerCase();
+    if (s.startsWith("reject") || s.startsWith("declin")) return { key: "rejected", label: "Rejected" };
+    if (s.startsWith("approv") || s === "verified" || s === "confirmed") return { key: "approved", label: "Approved" };
+    return { key: "pending", label: "Pending" };
+};
+
 const toMerchant = (m) => ({
     _id: m._id,
     merchantId: m.merchantId,
     username: m.shopName ?? m.username ?? "",
-    phone:  m.phonenumber ??  "",   // adjust to your merchant field name
+    phone: m.phonenumber ?? "", // adjust to your merchant field name
 });
 
 // Map one payment from your backend to what the table needs (adjust field names if yours differ)
 const toPayment = (p) => ({
     id: p._id ?? p.id ?? `${p.merchantId}-${p.date}-${p.amount}`,
-    merchant: cap( p.username ?? ""),
-    phone:  p.phonenumber ??  "",
-    method:p.paymentType ?? "-",
+    merchant: cap(p.username ?? ""),
+    phone: p.phonenumber ?? "",
+    method: p.paymentType ?? "-",
     date: p.date ?? p.paymentDate ?? p.createdAt ?? "",
     amount: Number(p.amount ?? 0),
+    status: statusOf(p.status),
 });
 
 export default function RecordPayment() {
@@ -67,7 +78,7 @@ export default function RecordPayment() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
     const [loadError, setLoadError] = useState("");
-    const [toast, setToast] = useState("");
+    const [successMsg, setSuccessMsg] = useState("");
 
     const openBtnRef = useRef(null);
 
@@ -106,13 +117,12 @@ export default function RecordPayment() {
     /* ---------- Load payment history ---------- */
     const getPayments = useCallback(async () => {
         try {
-            const response = await fetch(`${BACKEND}/getpayment`, {   // change to your history route
+            const response = await fetch(`${BACKEND}/getpayment`, { // change to your history route
                 method: "GET",
                 credentials: "include",
             });
             const data = await response.json();
 
-            console.log(data)
             if (!response.ok) {
                 setLoadError(data.message || "Could not load payment history.");
                 return;
@@ -191,16 +201,16 @@ export default function RecordPayment() {
         if (!date) return setError("Enter a valid payment date.");
 
         const payload = {
-            _id:merchantId,
+            _id: merchantId,
             amount: Number(amount),
-            type:method,
+            type: method,
             notes: notes.trim(),
         };
 
         setError("");
         setSaving(true);
         try {
-            const response = await fetch(`${BACKEND}/addpayment`, {   // change to your save route
+            const response = await fetch(`${BACKEND}/addpayment`, { // change to your save route
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
@@ -208,12 +218,20 @@ export default function RecordPayment() {
             });
             const data = await response.json();
 
+            // 401: pending payments must be verified first -> red error toast
+            if (response.status === 401) {
+                showErrorToast(data.message || data.meassage || "First check the payment verification", {
+                    icon: <XCircle size={20} color="red" />,
+                });
+                return;
+            }
+
             if (!response.ok) {
                 setError(data.message || "Could not record the payment. Try again.");
                 return;
             }
 
-            // show the new row right away, close the modal, clear the form
+            // show the new row right away (counter payments are confirmed immediately)
             setRecent((prev) => [
                 {
                     id: data._id || Date.now(),
@@ -222,15 +240,16 @@ export default function RecordPayment() {
                     method,
                     date,
                     amount: Number(amount),
+                    status: { key: "approved", label: "Approved" },
                 },
                 ...prev,
             ]);
             resetForm();
             setOpen(false);
-            getPayments();   // refresh the history from the server
+            getPayments(); // refresh the history from the server
 
-            setToast(`Payment of ${inr(payload.amount)} recorded`);
-            setTimeout(() => setToast(""), 3500);
+            setSuccessMsg(`Payment of ${inr(payload.amount)} recorded`);
+            setTimeout(() => setSuccessMsg(""), 3500);
         } catch (err) {
             console.log("error in record payment", err.message);
             setError("Can't reach the server. Please try again.");
@@ -242,6 +261,7 @@ export default function RecordPayment() {
     /* ---------- Screen ---------- */
     return (
         <div className="rp-page">
+            <ErrorToastMessage />
             <header className="rp-header">
                 <div>
                     <h1 className="rp-title">Record payment</h1>
@@ -259,7 +279,7 @@ export default function RecordPayment() {
             {/* Recent payments */}
             <section className="rp-recent-card">
                 <div className="rp-recent-head">
-                    <h2 className="rp-section-title">Recent confirmed payments</h2>
+                    <h2 className="rp-section-title">Recent payments</h2>
                     {!loadingRecent && <span className="rp-count">{recent.length} payments</span>}
                 </div>
 
@@ -284,6 +304,7 @@ export default function RecordPayment() {
                                     <th>Phone number</th>
                                     <th>Method</th>
                                     <th>Date</th>
+                                    <th>Status</th>
                                     <th className="rp-num">Amount</th>
                                 </tr>
                             </thead>
@@ -299,6 +320,11 @@ export default function RecordPayment() {
                                         <td className="rp-phone">{p.phone || "—"}</td>
                                         <td><span className="rp-chip">{p.method}</span></td>
                                         <td>{fmtDate(p.date)}</td>
+                                        <td>
+                                            <span className={`rp-status is-${p.status.key}`}>
+                                                <i /> {p.status.label}
+                                            </span>
+                                        </td>
                                         <td className="rp-num"><strong>{inr(p.amount)}</strong></td>
                                     </tr>
                                 ))}
@@ -432,8 +458,8 @@ export default function RecordPayment() {
                 </div>
             )}
 
-            {toast && (
-                <div className="rp-toast" role="status"><CheckCircle2 size={18} /> {toast}</div>
+            {successMsg && (
+                <div className="rp-toast" role="status"><CheckCircle2 size={18} /> {successMsg}</div>
             )}
         </div>
     );

@@ -12,7 +12,8 @@ import {
   DailyHistory,
   RecordPayment,
   MerchantBalances,
-  StoremanVerification
+  StoremanVerification,
+  StoreDetails
 } from './FileAddresses.jsx';
 import DashboardLayout from './component/Dashboard/Dashboard.jsx'
 
@@ -28,6 +29,7 @@ function App() {
         <Route path="/merchant/payments" element={<MerchantPayments />} />
         <Route path="/merchant/submit-payment" element={<MerchantSubmitPayment />} />
         <Route path="/merchant/daily-history" element={<DailyHistory />} />
+        <Route path="/merchant/Mystore" element={<StoreDetails />} />
 
         {/* storeman pages */}
         <Route path="/storeman/dashboard" element={<StoremanDashboard />} />

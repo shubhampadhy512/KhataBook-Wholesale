@@ -37,6 +37,7 @@ const GetPaymentHistory = asyncHandler(async (req, res) => {
             }
         })
     )
+    console.log(alldata)
     return res.status(200).json({
         message: 'Add the payment',
         body: alldata
@@ -65,7 +66,7 @@ const AddPayment = asyncHandler(async (req, res) => {
 
     console.log(checkPaymentVerification)
 
-    if (checkPaymentVerification.length >0) {
+    if (checkPaymentVerification.length > 0) {
         return res.status(401).json({
             meassage: 'First check the payment Verification'
         })
@@ -161,8 +162,8 @@ const SubmitPayment = asyncHandler(async (req, res) => {
         senderId: user_id,
         sendername: username,
         receiverId: balance.storemanID,
-        message: `You paid ${inr(amount)} to ${String(username.charAt(0).toUpperCase() +
-            username.slice(1))}`,
+        message: `${String(username.charAt(0).toUpperCase() +
+            username.slice(1))} Payment verification amount of ${inr(amount)}`,
         type: 'Payment'
     })
 

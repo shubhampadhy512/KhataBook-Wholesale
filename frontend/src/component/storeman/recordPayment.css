@@ -220,6 +220,39 @@
     margin: 0;
 }
 
+.rp-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.rp-status i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.rp-status.is-approved {
+    color: #0a7a55;
+    background: #e3f4ea;
+}
+
+.rp-status.is-pending {
+    color: #b7791f;
+    background: #fff4dc;
+}
+
+.rp-status.is-rejected {
+    color: #b3321f;
+    background: #fbe8e4;
+}
+
 /* ---------- Modal ---------- */
 .rp-overlay {
     position: fixed;

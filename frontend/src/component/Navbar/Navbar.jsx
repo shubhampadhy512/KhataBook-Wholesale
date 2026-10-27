@@ -7,13 +7,13 @@ import {
   MessageSquare,
   CircleUser,
   LogOut,
-  Users,
   PlusCircle,
   Wallet,
   ShieldCheck,
   Clock,
   BarChart3,
   BookText,
+  Store
 } from 'lucide-react';
 import "./Navbar.css"
 
@@ -25,7 +25,7 @@ const MENUS = {
       { to: '/merchant/daily-history', label: 'History', icon: BookOpen },
       { to: '/merchant/payments', label: 'My Payments', icon: CreditCard },
       { to: '/merchant/submit-payment', label: 'Submit Payment', icon: Send },
-      { to: '/merchant/chat', label: 'Chat', icon: MessageSquare, badgeKey: 'chat' },
+      { to: '/merchant/Mystore', label: 'My Store', icon: Store, badgeKey: 'My Store' },
       { to: '/merchant/account', label: 'My Account', icon: CircleUser },
     ],
   },

@@ -102,10 +102,7 @@ const resendOtp = asyncHandler(async (req, res) => {
 })
 const registerVerification = asyncHandler(async (req, res, next) => {
     // check the otp verification 
-    const { username, email, phonenumber, password, addresses, otp, role } = req.body
-
-    const finalUsername =
-        role === "storeman" ? `${username} Store` : username;
+    const { username, email, phonenumber, password, addresses, otp, role, storename } = req.body
 
     if (!otp) {
         return res.status(400).json({
@@ -144,8 +141,9 @@ const registerVerification = asyncHandler(async (req, res, next) => {
     // All test cases is verfied then create new user in mongo db
 
     const user = await User.create({
-        username: finalUsername,
+        username: username,
         email,
+        storename,
         phonenumber,
         role,
         addresses,

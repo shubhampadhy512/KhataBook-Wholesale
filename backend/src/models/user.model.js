@@ -9,6 +9,13 @@ const userSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    storename: {
+        type: String,
+        required: function () {
+            return this.type === "storeman";   // payments don't need a due date
+        },
+        trim: true
+    },
     email: {
         type: String,
         required: true,

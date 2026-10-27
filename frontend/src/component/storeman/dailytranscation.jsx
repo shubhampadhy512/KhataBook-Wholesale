@@ -161,6 +161,7 @@ export default function DailyHistory() {
                 });
                 const data = await response.json();
 
+                console.log(data)
                 if (!response.ok) {
                     setError(data.message || "Could not load the ledger.");
                     return;

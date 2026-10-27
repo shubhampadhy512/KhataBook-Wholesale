@@ -84,6 +84,7 @@ function OtpVerification({
     // registration body (unchanged) unless the parent passes its own
     const defaultVerifyBody = (code) => ({
         username: form.username.trim(),
+        storename: form.storename.trim(),
         email: form.email.trim().toLowerCase(),
         phonenumber: form.phone,
         password: form.password,

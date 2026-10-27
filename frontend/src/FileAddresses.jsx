@@ -18,6 +18,7 @@ import DailyHistory from "./component/storeman/dailytranscation.jsx"
 import RecordPayment from "./component/storeman/recordPayment.jsx"
 import MerchantBalances from "./component/storeman/merchantbalances.jsx"
 import StoremanVerification from "./component/storeman/verifyPayment.jsx"
+import StoreDetails from "./component/merchant/mystore.jsx"
 
 export {
     Navbar,
@@ -37,5 +38,6 @@ export {
     DailyHistory,
     RecordPayment,
     MerchantBalances,
-    StoremanVerification
+    StoremanVerification,
+    StoreDetails
 };

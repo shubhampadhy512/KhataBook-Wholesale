@@ -21,7 +21,7 @@ const EMPTY_SUMMARY = {
 
 const STATUS = {
     pending: { label: 'Pending Verification', className: 'is-pending' },
-    verified: { label: 'Verified — Successful', className: 'is-verified' },
+    verified: { label: 'Verified ', className: 'is-verified' },
     rejected: { label: 'Rejected', className: 'is-rejected' },
 };
 
@@ -30,7 +30,7 @@ const QUICK_ACTIONS = [
     { to: '/merchant/submit-payment', label: 'Submit Payment', icon: Send },
     { to: '/merchant/daily-history', label: 'History', icon: BookOpen },
     { to: '/merchant/chat', label: 'Open Chat', icon: MessageSquare },
-    { to: '/merchant/store', label: 'My Store', icon: Store },
+    { to: '/merchant/Mystore', label: 'My Store', icon: Store },
 ];
 
 const formatINR = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`;

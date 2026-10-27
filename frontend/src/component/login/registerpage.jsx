@@ -48,8 +48,12 @@ const validators = {
     pincode: (v) =>
         /^[1-9]\d{5}$/.test(v) ? '' : 'Enter a valid 6-digit pincode.',
 
+    storename: (v) =>
+        v.trim().length < 3 ? 'Store name must be at least 3 characters.' : '',
+
     password: (v) => {
         if (v.length < 6) return 'Password must be at least 6 characters.'
+        if (!/\d/.test(v)) return 'Add at least one number, e.g. 1 2 3'
         if (!/[^A-Za-z0-9\s]/.test(v)) {
             return 'Add one special character, e.g. @ # $ !'
         }
@@ -62,6 +66,7 @@ const DIGITS_ONLY = { phone: 10, pincode: 6 }
 
 const EMPTY_FORM = {
     username: '',
+    storename: '',
     email: '',
     phone: '',
     flat: '',
@@ -131,6 +136,7 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
     const validate = () => {
         const next = {}
         Object.keys(validators).forEach((name) => {
+            if (name === 'storename' && role !== 'storeman') return
             const message = validators[name](form[name])
             if (message) next[name] = message
         })
@@ -226,7 +232,10 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
                                         onBlur={showErrorOnBlur('email')} />
                                     {errors.email && <span className="field-error">{errors.email}</span>}
                                 </div>
-
+                                {role === 'storeman' && textField({
+                                    name: 'storename', id: 'storename', label: 'Store name',
+                                    placeholder: 'e.g. ABC Store', autoComplete: 'organization', span: 12,
+                                })}
                                 <div className={`field col-6 ${errors.phone ? 'has-error' : ''}`}>
                                     <label htmlFor="phone">Phone number</label>
                                     <div className="phone-wrap">
@@ -243,7 +252,7 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
                                     <label htmlFor="reg-password">Password</label>
                                     <div className="password-wrap">
                                         <input id="reg-password" type={showPassword ? 'text' : 'password'}
-                                            autoComplete="new-password" placeholder="6+ chars, 1 special"
+                                            autoComplete="new-password" placeholder="6+ chars, 1 number, 1 special"
                                             value={form.password} onChange={setField('password')}
                                             onBlur={showErrorOnBlur('password')} />
                                         <button type="button" className="toggle-pass"
@@ -254,7 +263,7 @@ function RegisterPage({ role = 'storeman', onBack, onLogin }) {
                                     </div>
                                     {errors.password
                                         ? <span className="field-error">{errors.password}</span>
-                                        : <span className="field-hint">At least 6 characters, including one special character.</span>}
+                                        : <span className="field-hint">At least 6 characters, including one number and one special character.</span>}
                                 </div>
 
                                 <h3 className="reg-section">Address</h3>
