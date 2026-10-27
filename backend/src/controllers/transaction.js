@@ -120,22 +120,22 @@ const GetdailyTranscation = asyncHandler(async (req, res) => {
         }
 
         const storename = await Promise.all(
-            formerchant.map(async (user) => {
-                const invitation = await User.findOne({
-                    _id: user.storemanId
+            formerchant.map(async (data) => {
+                const user = await User.findOne({
+                    _id: data.storemanId
                 })
                     .sort({ updatedAt: -1 })
-                    .select("username");
+                    .select("storename");
 
                 const payment = await Payment.findOne({
-                    transactionId: user._id
+                    transactionId: data._id
                 })
                     .sort({ updatedAt: -1 })
                     .select("amount");
 
                 return {
-                    ...user.toObject(),
-                    username: invitation?.username || "",
+                    ...data.toObject(),
+                    username: user?.storename || "",
                     paidamount: payment?.amount || 0
                 }
             })
@@ -191,7 +191,7 @@ const GetdailyTranscation = asyncHandler(async (req, res) => {
             return {
                 ...data.toObject(),
                 username: user?.username || "",
-                phonenumber: user?.phonenumber || ""
+                phonenumber: user?.phonenumber || "",
             }
         })
     )
@@ -218,7 +218,7 @@ const GetmerchantTransaction = asyncHandler(async (req, res) => {
     }
     const merchantdetailsbalance = await Promise.all(
         balanceamount.map(async (data) => {
-            const user = await User.findOne(data.merchantId).select("username phonenumber")
+            const user = await User.findOne(data.merchantId).select("username phonenumber ")
 
             return {
                 ...data.toObject(),

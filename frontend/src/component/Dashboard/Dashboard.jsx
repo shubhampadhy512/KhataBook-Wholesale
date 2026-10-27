@@ -54,7 +54,9 @@ function DashboardLayout() {
     if (error || !user) return <div className="dl-shell">Failed to load user: {error}</div>
 
     const role = user.role === 'storeman' ? 'storeman' : 'merchant'
-    const displayName = capitalize(user.username || 'User')
+    const displayName = capitalize(
+        (role === 'storeman' ? user.storename || user.username : user.username) || 'User'
+    )
 
     return (
         <div className="dl-shell">

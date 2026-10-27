@@ -160,6 +160,7 @@ const registerVerification = asyncHandler(async (req, res, next) => {
             email: newuser.email,
             addresses: newuser.addresses,
             role: role,
+            storename: newuser.storename,
             phonenumber: newuser.phonenumber
         }
 
@@ -530,7 +531,7 @@ const getMerchantdetails = asyncHandler(async (req, res) => {
 })
 
 const getUserdetails = asyncHandler(async (req, res) => {
-    const { _id } = req.user._id
+    const { _id } = req.user
 
     if (!_id) {
         return res.status(400).json({

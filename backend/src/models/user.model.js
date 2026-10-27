@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
     storename: {
         type: String,
         required: function () {
-            return this.type === "storeman";   // payments don't need a due date
+            return this.role === "storeman";
         },
         trim: true
     },

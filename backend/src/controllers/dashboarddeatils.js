@@ -8,37 +8,7 @@ const Payment = require("../models/paymentSchema.js")
 
 
 const GetDashboardDetails = asyncHandler(async (req, res) => {
-    // {
-    //     "body": {
-    //         "merchant": {
-    //             "name": "ramesh",
-    //                 "store": "Ramesh General Store"
-    //         },
-    //         "summary": {
-    // "totalCredit": 150000,
-    //     "totalPaid": 90000,
-    //         "outstanding": 60000
-    //         },
-    //         "submissions": [
-    //             {
-    //                 "id": "PAY-1001",
-    //                 "amount": 5000,
-    //                 "method": "UPI",
-    //                 "reference": "412345678901",
-    //                 "submittedAt": "26 Oct 2026, 3:45 PM",
-    //                 "status": "pending"
-    //             },
-    //             {
-    //                 "id": "PAY-1000",
-    //                 "amount": 12000,
-    //                 "method": "Bank Transfer",
-    //                 "reference": "UTR98765432",
-    //                 "submittedAt": "25 Oct 2026, 11:10 AM",
-    //                 "status": "verified"
-    //             }
-    //         ]
-    //     }
-    // }
+
     const { _id, username, role } = req.user
 
     if (role === 'merchant') {
@@ -51,7 +21,7 @@ const GetDashboardDetails = asyncHandler(async (req, res) => {
             })
         }
 
-        const storeman = await User.findById(balances.storemanID).select("username")
+        const storeman = await User.findById(balances.storemanID).select("username storename addresses phonenumber")
         const payment = await Payment.find({
             merchantId: _id,
         }).select("status createdAt notes amount paymentType")
@@ -60,8 +30,10 @@ const GetDashboardDetails = asyncHandler(async (req, res) => {
             message: 'Done',
             body: {
                 merchant: {
-                    name: username,
-                    store: storeman.username
+                    name: storeman.username,
+                    store: storeman.storename || storeman.username,
+                    addresses: storeman.addresses,
+                    phonenumber: storeman.phonenumber,
                 },
                 summary: {
                     totalCredit: balances.totalamount,

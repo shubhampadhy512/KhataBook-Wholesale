@@ -9,7 +9,7 @@ const EMPTY_MERCHANT = {
     store: '',
     name: '',
     phonenumber: '',
-    address: '',
+    addresses: '',
     category: '',
     since: '',
 };
@@ -26,8 +26,8 @@ const initials = (name = '') =>
         .map((w) => w[0].toUpperCase())
         .join('');
 
-const mapsHref = (address) =>
-    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+const mapsHref = (addresses) =>
+    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addresses)}`;
 
 function CopyButton({ text, label }) {
     const [copied, setCopied] = useState(false);
@@ -150,15 +150,15 @@ export default function StoreDetails({ chatPath = '/merchant/chat' }) {
 
                     <section className="sd-card sd-section sd-wide">
                         <h2 className="sd-h2">
-                            <MapPin size={18} /> Address
+                            <MapPin size={18} /> addresses
                         </h2>
-                        <p className="sd-address">{merchant.address || '-'}</p>
-                        {merchant.address && (
+                        <p className="sd-addresses">{merchant.addresses || '-'}</p>
+                        {merchant.addresses && (
                             <span className="sd-links">
-                                <a href={mapsHref(merchant.address)} target="_blank" rel="noreferrer">
+                                <a href={mapsHref(merchant.addresses)} target="_blank" rel="noreferrer">
                                     Open in Maps
                                 </a>
-                                <CopyButton text={merchant.address} label="Copy address" />
+                                <CopyButton text={merchant.addresses} label="Copy addresses" />
                             </span>
                         )}
                     </section>
