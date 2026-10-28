@@ -8,7 +8,7 @@ import "./ProductManager.css";
 const BACKEND = import.meta.env.VITE_BACKEND_URL;
 
 const ROUTES = {
-    list: "/getproducts",
+    list: "/getallproducts",
     add: "/addproduct",
     update: (id) => `/updateproduct/${id}`,
     remove: (id) => `/deleteproduct/${id}`,
@@ -31,9 +31,13 @@ const request = async (path, method = "GET", body) => {
     return data;
 };
 
+/*
+ * Backend uses "productname" — normalise to "name" here so the
+ * rest of the component always works with the clean internal key.
+ */
 const toProduct = (p) => ({
     id: String(p._id ?? p.id),
-    name: p.name ?? "",
+    name: p.productname ?? p.name ?? "",   // handle both spellings
     category: p.category ?? "",
     unit: p.unit ?? "kg",
     price: Number(p.price) || 0,
@@ -49,8 +53,8 @@ export default function ProductManager() {
     const [loadError, setLoadError] = useState("");
     const [search, setSearch] = useState("");
     const [category, setCategory] = useState("All");
-    const [editor, setEditor] = useState(null);   // null | { product: null | {...} }
-    const [deleting, setDeleting] = useState(null);   // null | product
+    const [editor, setEditor] = useState(null);
+    const [deleting, setDeleting] = useState(null);
     const [toast, setToast] = useState("");
 
     /* ── Data loading ─────────────────────────────────────────── */
@@ -86,6 +90,10 @@ export default function ProductManager() {
 
     /* ── Save (add / update) ──────────────────────────────────── */
     const handleSave = async (values, existing) => {
+        /*
+         * Uniqueness check — same name (case-insensitive) + same unit
+         * = duplicate. Uses internal "name" key (already normalised).
+         */
         const clash = products.find(
             (p) =>
                 p.id !== existing?.id &&
@@ -94,11 +102,24 @@ export default function ProductManager() {
         );
         if (clash) throw new Error(`"${clash.name}" per ${clash.unit} already exists.`);
 
+        /*
+         * Translate internal "name" → "productname" only when sending
+         * to the backend, so the DB schema is satisfied.
+         */
+        const payload = {
+            productname: values.name,
+            category: values.category,
+            unit: values.unit,
+            price: values.price,
+            emoji: values.emoji,
+        };
+
         if (existing) {
-            await request(ROUTES.update(existing.id), "PUT", values);
+            await request(ROUTES.update(existing.id), "PUT", payload);
         } else {
-            await request(ROUTES.add, "POST", values);
+            await request(ROUTES.add, "POST", payload);
         }
+
         await loadProducts();
         setEditor(null);
         showToast(existing ? `${values.name} updated` : `${values.name} added`);
@@ -262,6 +283,8 @@ export default function ProductManager() {
 
 /* ═══════════════════════════════════════════════════════════════
    Add / Edit modal
+   Form always uses the internal "name" key.
+   Translation to "productname" happens in handleSave above.
 ═══════════════════════════════════════════════════════════════ */
 function ProductModal({ product, categories, onClose, onSave }) {
     const [form, setForm] = useState({
@@ -276,7 +299,6 @@ function ProductModal({ product, categories, onClose, onSave }) {
 
     const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
-    /* Close on Escape */
     useEffect(() => {
         const handler = (e) => { if (e.key === "Escape") onClose(); };
         document.addEventListener("keydown", handler);

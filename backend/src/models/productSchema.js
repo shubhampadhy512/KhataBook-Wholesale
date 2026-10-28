@@ -1,5 +1,5 @@
 
-import mongoose from "mongoose";
+const mongoose = require("mongoose")
 
 const productSchema = new mongoose.Schema(
     {
@@ -9,19 +9,16 @@ const productSchema = new mongoose.Schema(
             required: true,
             index: true,
         },
-
-        name: {
+        productname: {
             type: String,
             required: true,
             trim: true,
         },
-
         category: {
             type: String,
             required: true,
             trim: true,
         },
-
         unit: {
             type: String,
             required: true,
@@ -37,25 +34,7 @@ const productSchema = new mongoose.Schema(
 
         emoji: {
             type: String,
-            default: "📦",
             trim: true,
-        },
-
-        imageUrl: {
-            type: String,
-            default: "",
-            trim: true,
-        },
-
-        imagePublicId: {
-            type: String,
-            default: "",
-            trim: true,
-        },
-
-        isActive: {
-            type: Boolean,
-            default: true,
         },
     },
     {
@@ -64,4 +43,4 @@ const productSchema = new mongoose.Schema(
 );
 
 
-export const Product = mongoose.model("Product", productSchema);
+module.exports = mongoose.model("Product", productSchema);

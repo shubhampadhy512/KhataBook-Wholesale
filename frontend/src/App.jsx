@@ -40,7 +40,7 @@ function App() {
         <Route path="/storeman/addrecord-payment" element={<RecordPayment />} />
         <Route path="/storeman/merchantbalances" element={<MerchantBalances />} />
         <Route path="/storeman/verifypayment" element={<StoremanVerification />} />
-        <Route path="/storeman/product" element={<ProductManager />} />
+        <Route path="/storeman/getallproducts" element={<ProductManager />} />
       </Route>
     </Routes>
   )

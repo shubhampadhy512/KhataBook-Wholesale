@@ -141,7 +141,7 @@ function SearchBar() {
                 <input
                     type="search"
                     autoComplete="off"
-                    placeholder="Search…"
+                    placeholder="Add Customers..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                 />

@@ -14,6 +14,7 @@ const { registerUser,
 const { InvitationSend, Listofmessage, UpdateMessage, NormalMessageSeen } = require("../controllers/message.js")
 const { AddTransaction, GetdailyTranscation, GetmerchantTransaction } = require('../controllers/transaction.js')
 const { AddPayment, GetPaymentHistory, SubmitPayment, getPendingPayment, HandlePayment } = require("../controllers/payment.js")
+const { getProductList, AddProduct, RemoveProduct, UpdateProduct } = require("../controllers/product.js")
 const VerifyUser = require("../middlewar/authVerifiy.js")
 const { GetDashboardDetails } = require("../controllers/dashboarddeatils.js")
 
@@ -73,8 +74,16 @@ router.route("/pendingpayments").get(VerifyUser, getPendingPayment)
 router.route("/verfiypayment").post(VerifyUser, HandlePayment)
 
 //dashboardetails
-
 router.route("/getdashboarddetails").get(VerifyUser, GetDashboardDetails)
 
+// Product
+
+router.route("/getallproducts").get(VerifyUser, getProductList)
+
+router.route("/addproduct").post(VerifyUser, AddProduct)
+
+router.delete("/deleteproduct/:id", RemoveProduct);
+
+router.put("/updateproduct/:id", UpdateProduct);
 
 module.exports = router

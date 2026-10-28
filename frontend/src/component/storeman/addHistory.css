@@ -359,6 +359,12 @@
     border-radius: 999px;
 }
 
+/* ── Items list: shows exactly 4 rows then scrolls ────────────
+   Each row is: padding-top 12 + padding-bottom 12 = 24px padding
+   + name line ~20px + subtitle ~16px + bottom row ~38px + gap 10px
+   ≈ 108px per item. 4 items × 108 = 432px, plus a half-peek (54px)
+   so the user knows there's more = 486px. Adjust if your row height differs.
+──────────────────────────────────────────────────────────────── */
 .ce-items {
     list-style: none;
     margin: 0;
@@ -366,14 +372,40 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    max-height: 320px;
+
+    /* Show 4 full rows + a tiny peek of the 5th so scroll is obvious */
+    max-height: calc((108px * 4) + (10px * 3) + 54px);
+    /* 108×4 rows + 3 gaps + half-peek */
     overflow-y: auto;
+    overflow-x: hidden;
+
+    /* Smooth momentum scroll on iOS */
+    -webkit-overflow-scrolling: touch;
+
+    /* Subtle scroll indicator at the bottom when overflowing */
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+}
+
+.ce-items::-webkit-scrollbar {
+    width: 4px;
+}
+
+.ce-items::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ce-items::-webkit-scrollbar-thumb {
+    background: var(--line);
+    border-radius: 99px;
 }
 
 .ce-items li {
     padding: 12px;
     background: var(--bg);
     border-radius: 12px;
+    /* prevent items from shrinking below their natural height */
+    flex-shrink: 0;
 }
 
 .ce-item-top,

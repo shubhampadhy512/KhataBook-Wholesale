@@ -10,7 +10,7 @@ import {
   PlusCircle,
   Wallet,
   ShieldCheck,
-  Clock,
+  PackageOpen,
   BarChart3,
   BookText,
   Store
@@ -38,7 +38,7 @@ const MENUS = {
       { to: '/storeman/addrecord-payment', label: 'Record Payment', icon: Wallet },
       { to: '/storeman/verifypayment', label: 'Payment Verification', icon: ShieldCheck },
       { to: '/storeman/merchantbalances', label: 'Balances', icon: MessageSquare, badgeKey: 'balances' },
-      { to: '/storeman/product', label: 'Outstanding Dues', icon: Clock },
+      { to: '/storeman/getallproducts', label: 'All Product', icon: PackageOpen },
       { to: '/storeman/reports', label: 'Reports', icon: BarChart3 },
     ],
   },
