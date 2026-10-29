@@ -538,11 +538,43 @@ const getUserdetails = asyncHandler(async (req, res) => {
             message: 'User not found'
         })
     }
-    const user = await User.findById(_id).select("-phonenumber -addresses -password -refreshToken")
+    const user = await User.findById(_id).select("-password -refreshToken")
     console.log(user)
     return res.status(200).json({
         message: 'This details',
         body: user
+    })
+})
+
+const UpdateUserData = asyncHandler(async (req, res) => {
+    const { addresses, phonenumber, username, storename } = req.body
+    console.log(addresses, phonenumber, username, req.user._id)
+    const user_id = req.user._id
+
+    const user = await User.findById(user_id)
+
+    if (!addresses || !username || !phonenumber) {
+        return res.status(400).json({
+            message: 'All field is required'
+        })
+    }
+
+    if (user.addresses === addresses && user.username === username && user.phonenumber === phonenumber && user.storename === storename) {
+        return res.status(400).json({
+            message: "Nothing updata in your account details"
+        })
+    }
+
+    await User.findByIdAndUpdate(user_id, {
+        username: username,
+        storename: storename,
+        phonenumber: phonenumber,
+        addresses: addresses
+    })
+
+
+    return res.status(200).json({
+        message: 'Successfully update!!!'
     })
 })
 
@@ -559,5 +591,6 @@ module.exports = {
     Changepass_validateEmail,
     VerifyOtp,
     getMerchantdetails,
-    getUserdetails
+    getUserdetails,
+    UpdateUserData
 }

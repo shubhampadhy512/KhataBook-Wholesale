@@ -9,7 +9,7 @@ const { registerUser,
     resendOtp,
     ResetPassword,
     VerifyOtp,
-    Changepass_validateEmail, getMerchantdetails, getUserdetails } = require("../controllers/user.controllers.js")
+    Changepass_validateEmail, getMerchantdetails, getUserdetails, UpdateUserData } = require("../controllers/user.controllers.js")
 
 const { InvitationSend, Listofmessage, UpdateMessage, NormalMessageSeen } = require("../controllers/message.js")
 const { AddTransaction, GetdailyTranscation, GetmerchantTransaction } = require('../controllers/transaction.js')
@@ -41,6 +41,8 @@ router.route("/user").get(VerifyUser, getUserdetails)
 router.route("/merchantsdetails").get(VerifyUser, getMerchantdetails)
 
 router.route("/rolebased-suggestion").get(VerifyUser, FindStoremanOrMerchant)
+
+router.route("/updateuserdetails").put(VerifyUser, UpdateUserData);
 
 //Notification
 
@@ -82,8 +84,8 @@ router.route("/getallproducts").get(VerifyUser, getProductList)
 
 router.route("/addproduct").post(VerifyUser, AddProduct)
 
-router.delete("/deleteproduct/:id", RemoveProduct);
+router.route("/deleteproduct/:id").delete(VerifyUser, RemoveProduct);
 
-router.put("/updateproduct/:id", UpdateProduct);
+router.route("/updateproduct/:id").put(VerifyUser, UpdateProduct);
 
 module.exports = router

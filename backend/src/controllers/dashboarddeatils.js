@@ -30,7 +30,7 @@ const GetDashboardDetails = asyncHandler(async (req, res) => {
             message: 'Done',
             body: {
                 merchant: {
-                    name: storeman.username,
+                    name: username,
                     store: storeman.storename || storeman.username,
                     addresses: storeman.addresses,
                     phonenumber: storeman.phonenumber,

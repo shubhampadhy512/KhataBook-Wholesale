@@ -114,6 +114,7 @@ export default function MerchantDashboard() {
                 });
 
                 const data = await res.json().catch(() => ({}));
+                console.log(data)
                 if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`);
 
                 const body = data.body || {};

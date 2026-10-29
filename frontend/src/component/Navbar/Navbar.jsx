@@ -26,7 +26,7 @@ const MENUS = {
       { to: '/merchant/payments', label: 'My Payments', icon: CreditCard },
       { to: '/merchant/submit-payment', label: 'Submit Payment', icon: Send },
       { to: '/merchant/Mystore', label: 'My Store', icon: Store, badgeKey: 'My Store' },
-      { to: '/merchant/account', label: 'My Account', icon: CircleUser },
+      { to: '/merchant/myaccount', label: 'My Account', icon: CircleUser },
     ],
   },
   storeman: {
@@ -39,6 +39,7 @@ const MENUS = {
       { to: '/storeman/verifypayment', label: 'Payment Verification', icon: ShieldCheck },
       { to: '/storeman/merchantbalances', label: 'Balances', icon: MessageSquare, badgeKey: 'balances' },
       { to: '/storeman/getallproducts', label: 'All Product', icon: PackageOpen },
+      { to: '/storeman/myaccount', label: 'My Account', icon: CircleUser },
       { to: '/storeman/reports', label: 'Reports', icon: BarChart3 },
     ],
   },
